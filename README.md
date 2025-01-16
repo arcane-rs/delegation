@@ -392,6 +392,6 @@ Slower though, more similar to [Dynamic dispatch][1].
 [1]: https://doc.rust-lang.org/book/ch17-02-trait-objects.html
 [2]: https://docs.rs/enum_dispatch/latest/enum_dispatch
 [3]: https://docs.rs/enum_derive/latest/enum_derive
-[4]: 
+[4]: https://gitlab.com/dawn_app/enum_delegate
 
 [orphan rules]: https://rust-lang.github.io/chalk/book/clauses/coherence.html#the-orphan-rules
