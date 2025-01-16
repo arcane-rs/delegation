@@ -1,0 +1,24 @@
+error[E0277]: the trait bound `String: AsStr` is not satisfied
+ --> tests/errors/newtype_inner_not_impls_trait.rs:8:1
+  |
+8 | #[delegate(derive(AsStr))]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `AsStr` is not implemented for `String`
+  |
+  = help: the following other types implement trait `AsStr`:
+            FirstName
+            delegation::__macros::Wrapper<__Delegate>
+note: required for `Either<String, Void>` to implement `__delegate_AsStr__DelegateOwned`
+ --> tests/errors/newtype_inner_not_impls_trait.rs:3:1
+  |
+3 | #[delegate]
+  | ^^^^^^^^^^^
+4 | trait AsStr {
+  |       ^^^^^ unsatisfied trait bound introduced here
+note: required for `delegation::__macros::Wrapper<FirstName>` to implement `AsStr`
+ --> tests/errors/newtype_inner_not_impls_trait.rs:3:1
+  |
+3 | #[delegate]
+  | ^^^^^^^^^^^
+4 | trait AsStr {
+  |       ^^^^^ unsatisfied trait bound introduced here
+  = note: this error originates in the attribute macro `delegate` (in Nightly builds, run with -Z macro-backtrace for more info)

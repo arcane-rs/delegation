@@ -1,0 +1,40 @@
+error: generic parameters may not be used in const operations
+  --> tests/errors/expr_in_generic_params.rs:10:37
+   |
+10 |     fn next_version(&self) -> Ver<{ V + 1 }>;
+   |                                     ^ cannot perform const operation using `V`
+   |
+   = help: const parameters may only be used as standalone arguments, i.e. `V`
+
+error: generic parameters may not be used in const operations
+  --> tests/errors/expr_in_generic_params.rs:20:37
+   |
+20 |     fn next_version(&self) -> Ver<{ V + 1 }> {
+   |                                     ^ cannot perform const operation using `V`
+   |
+   = help: const parameters may only be used as standalone arguments, i.e. `V`
+
+error: generic parameters may not be used in const operations
+  --> tests/errors/expr_in_generic_params.rs:21:17
+   |
+21 |         Ver::<{ V + 1 }>
+   |                 ^ cannot perform const operation using `V`
+   |
+   = help: const parameters may only be used as standalone arguments, i.e. `V`
+
+error: generic parameters may not be used in const operations
+  --> tests/errors/expr_in_generic_params.rs:26:34
+   |
+26 |     for<const V: u8> Versioned<{ V + 1 }>;
+   |                                  ^ cannot perform const operation using `V`
+   |
+   = help: const parameters may only be used as standalone arguments, i.e. `V`
+
+error[E0207]: the const parameter `V` is not constrained by the impl trait, self type, or predicates
+  --> tests/errors/expr_in_generic_params.rs:26:9
+   |
+26 |     for<const V: u8> Versioned<{ V + 1 }>;
+   |         ^^^^^^^^^^^ unconstrained const parameter
+   |
+   = note: expressions using a const parameter must map each value to a distinct output value
+   = note: proving the result of expressions other than the parameter are unique is not supported

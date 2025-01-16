@@ -1,0 +1,79 @@
+error[E0412]: cannot find type `V` in this scope
+  --> tests/errors/wrong_generics.rs:7:23
+   |
+7  |   trait Versioned<const V: u8> {
+   |                         ^ not found in this scope
+...
+19 | / #[delegate(derive(
+20 | |     for<'a> Versioned<'a>;
+21 | | ))]
+   | |___- in this procedural macro expansion
+   |
+   = note: this error originates in the macro `Versioned` which comes from the expansion of the attribute macro `delegate` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: you might be missing a type parameter
+   |
+20 |     for<'a, V> Versioned<'a>;
+   |           +++
+
+error[E0107]: trait takes 0 lifetime arguments but 1 lifetime argument was supplied
+  --> tests/errors/wrong_generics.rs:20:13
+   |
+20 |     for<'a> Versioned<'a>;
+   |             ^^^^^^^^^---- help: remove the unnecessary generics
+   |             |
+   |             expected 0 lifetime arguments
+   |
+note: trait defined here, with 0 lifetime parameters
+  --> tests/errors/wrong_generics.rs:7:7
+   |
+7  | trait Versioned<const V: u8> {
+   |       ^^^^^^^^^
+
+error[E0107]: trait takes 1 generic argument but 0 generic arguments were supplied
+  --> tests/errors/wrong_generics.rs:20:13
+   |
+20 |     for<'a> Versioned<'a>;
+   |             ^^^^^^^^^ expected 1 generic argument
+   |
+note: trait defined here, with 1 generic parameter: `V`
+  --> tests/errors/wrong_generics.rs:7:7
+   |
+7  | trait Versioned<const V: u8> {
+   |       ^^^^^^^^^ -----------
+help: add missing generic argument
+   |
+20 |     for<'a> Versioned<'a, V>;
+   |                         +++
+
+error[E0747]: unresolved item provided when a constant was expected
+  --> tests/errors/wrong_generics.rs:7:23
+   |
+7  |   trait Versioned<const V: u8> {
+   |                         ^
+...
+19 | / #[delegate(derive(
+20 | |     for<'a> Versioned<'a>;
+21 | | ))]
+   | |___- in this procedural macro expansion
+   |
+   = note: this error originates in the macro `Versioned` which comes from the expansion of the attribute macro `delegate` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: if this generic argument was intended as a const parameter, surround it with braces
+   |
+7  | trait Versioned<const { V }: u8> {
+   |                       +   +
+
+error[E0107]: trait takes 1 generic argument but 0 generic arguments were supplied
+  --> tests/errors/wrong_generics.rs:20:13
+   |
+20 |     for<'a> Versioned<'a>;
+   |             ^^^^^^^^^ expected 1 generic argument
+   |
+note: trait defined here, with 1 generic parameter: `V`
+  --> tests/errors/wrong_generics.rs:7:7
+   |
+7  | trait Versioned<const V: u8> {
+   |       ^^^^^^^^^ -----------
+help: add missing generic argument
+   |
+6  | #[delegate]V
+   |            +
