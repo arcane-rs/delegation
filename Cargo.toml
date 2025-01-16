@@ -1,0 +1,12 @@
+[package]
+name = "delegation"
+version = "0.0.0"
+edition = "2021"
+authors = ["Kai Ren <tyranron@gmail.com>"]
+documentation = "https://docs.rs/delegation"
+homepage = "https://github.com/arcane-rs/delegation"
+repository = "https://github.com/arcane-rs/delegation"
+readme = "README.md"
+include = ["/src/", "/Cargo.toml", "/README.md"]
+
+[dependencies]
