@@ -1,0 +1,34 @@
+[[pre-release-replacements]]
+file = "../Cargo.toml"
+exactly = 1
+search = "codegen = \\{ version = \"[^\"]+\""
+replace = "codegen = { version = \"={{version}}\""
+[[pre-release-replacements]]
+file = "../Cargo.toml"
+exactly = 1
+search = "^version = \"[^\"]+\"$"
+replace = "version = \"{{version}}\""
+
+[[pre-release-replacements]]
+file = "../CHANGELOG.md"
+max = 1
+min = 0
+search = "## main"
+replace = "## [{{version}}] · {{date}}\n[{{version}}]: https://github.com/arcane-rs/delegation/tree/v{{version}}"
+[[pre-release-replacements]]
+file = "../CHANGELOG.md"
+max = 1
+min = 0
+search = "...main\\)"
+replace = "...v{{version}})"
+
+[[pre-release-replacements]]
+file = "README.md"
+exactly = 3
+search = "/blob/[^/]+/"
+replace = "/blob/v{{version}}/"
+[[pre-release-replacements]]
+file = "../README.md"
+exactly = 3
+search = "/blob/[^/]+/"
+replace = "/blob/v{{version}}/"

@@ -27,6 +27,7 @@ jobs:
       - clippy
       - example
       - msrv
+      - release-check
       - rustdoc
       - rustfmt
       - test
@@ -176,3 +177,86 @@ jobs:
                             private=yes open=no
         env:
           RUSTFLAGS: -D warnings
+
+
+
+
+  #############
+  # Releasing #
+  #############
+
+  publish:
+    name: publish (crates.io)
+    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    needs: ["release-github"]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: stable
+
+      - run: cargo publish -p delegation-codegen --all-features
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATESIO_TOKEN }}
+      - run: cargo publish -p delegation --all-features
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CRATESIO_TOKEN }}
+
+  release-check:
+    name: check (release)
+    if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: stable
+
+      - run: cargo install cargo-release
+
+      - run: make cargo.release ver=minor exec=no
+                                install=no
+
+  release-github:
+    name: release (GitHub)
+    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    needs:
+      - bench
+      - clippy
+      - example
+      - msrv
+      - release-check
+      - rustdoc
+      - rustfmt
+      - test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Parse release version
+        id: release
+        run: echo "version=${GITHUB_REF#refs/tags/v}"
+             >> $GITHUB_OUTPUT
+      - name: Verify release version matches `delegation` crate's Cargo manifest
+        run: |
+          test "${{ steps.release.outputs.version }}" \
+            == "$(grep -m1 'version = "' Cargo.toml | cut -d'"' -f2)"
+      - name: Verify release version matches `delegation-codegen` crate's Cargo manifest
+        run: |
+          test "${{ steps.release.outputs.version }}" \
+            == "$(grep -m1 'version = "' codegen/Cargo.toml | cut -d'"' -f2)"
+
+      - name: Parse CHANGELOG link
+        id: changelog
+        run: echo "link=${{ github.server_url }}/${{ github.repository }}/blob/v${{ steps.release.outputs.version }}/CHANGELOG.md#$(sed -n '/^## \[${{ steps.release.outputs.version }}\]/{s/^## \[\(.*\)\][^0-9]*\([0-9].*\)/\1--\2/;s/[^0-9a-z-]*//g;p;}' CHANGELOG.md)"
+             >> $GITHUB_OUTPUT
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ steps.release.outputs.version }}
+          body: |
+            [API docs](https://docs.rs/delegation/${{ steps.release.outputs.version }})
+            [Changelog](${{ steps.changelog.outputs.link }})
+          prerelease: ${{ contains(steps.release.outputs.version, '-') }}

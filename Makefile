@@ -27,6 +27,9 @@ fmt: cargo.fmt
 lint: cargo.lint
 
 
+release: cargo.release
+
+
 test: test.cargo
 
 
@@ -73,6 +76,26 @@ cargo.lint:
 	cargo clippy --workspace --all-features -- -D warnings
 
 
+# Prepare Rust crate release.
+#
+# Read more about bump levels here:
+#	https://github.com/crate-ci/cargo-release/blob/master/docs/reference.md#bump-level
+#
+# Usage:
+#	make cargo.release [ver=(release|<bump-level>)] [exec=(no|yes)]
+#	                   [install=(yes|no)]
+
+cargo.release:
+ifneq ($(install),no)
+	cargo install cargo-release
+endif
+	cargo release -p delegation-codegen --all-features \
+		$(if $(call eq,$(exec),yes),\
+			--no-publish --no-push --execute,\
+			-v $(if $(call eq,$(CI),),,--no-publish)) \
+		$(or $(ver),release)
+
+
 cargo.test: test.cargo
 
 
@@ -108,6 +131,6 @@ endif
 # .PHONY section #
 ##################
 
-.PHONY: all docs fmt lint test \
-        cargo.doc cargo.fmt cargo.lint cargo.test \
+.PHONY: all docs fmt lint release test \
+        cargo.doc cargo.fmt cargo.lint cargo.release cargo.test \
         test.cargo
