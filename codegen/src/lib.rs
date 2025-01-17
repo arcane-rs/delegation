@@ -159,6 +159,8 @@ mod macro_path;
 use proc_macro2::TokenStream;
 use quote::ToTokens as _;
 use syn::spanned::Spanned as _;
+#[cfg(test)]
+use {delegation as _, trybuild as _}; // Used in integration tests.
 
 pub(crate) use macro_path::MacroPath;
 

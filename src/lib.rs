@@ -159,3 +159,6 @@ pub mod __macros;
 
 #[doc(inline)]
 pub use codegen::delegate;
+
+#[cfg(test)]
+use criterion as _; // Used in benches.
