@@ -6,7 +6,10 @@ All user visible changes to this project will be documented in this file. This p
 
 
 
-## main
+## [0.3.0] · 2025-01-17
+[0.3.0]: https://github.com/arcane-rs/delegation/tree/v0.3.0
+
+[Diff](https://github.com/arcane-rs/delegation/compare/d375a898...v0.3.0) | [Milestone](https://github.com/arcane-rs/delegation/milestone/1)
 
 ### Added
 

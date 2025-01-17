@@ -8,7 +8,7 @@
 [![Rust docs](https://docs.rs/delegation/badge.svg "Rust docs")](https://docs.rs/delegation)
 
 [API Docs](https://docs.rs/delegation) |
-[Changelog](https://github.com/arcane-rs/delegation/blob/main/CHANGELOG.md)
+[Changelog](https://github.com/arcane-rs/delegation/blob/v0.3.0/CHANGELOG.md)
 
 Macro-based delegation for enums and structs.
 
@@ -360,6 +360,6 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 [`enum_derive::EnumInnerAsTrait`]: https://docs.rs/enum_derive/latest/enum_derive/macro.EnumInnerAsTrait.html
 [`enum_dispatch`]: https://docs.rs/enum_dispatch
 [1]: https://doc.rust-lang.org/book/ch17-02-trait-objects.html
-[APACHE]: https://github.com/arcane-rs/delegation/blob/main/LICENSE-APACHE
-[MIT]: https://github.com/arcane-rs/delegation/blob/main/LICENSE-MIT
+[APACHE]: https://github.com/arcane-rs/delegation/blob/v0.3.0/LICENSE-APACHE
+[MIT]: https://github.com/arcane-rs/delegation/blob/v0.3.0/LICENSE-MIT
 [orphan rules]: https://rust-lang.github.io/chalk/book/clauses/coherence.html#the-orphan-rules

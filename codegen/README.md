@@ -8,7 +8,7 @@
 [![Rust docs](https://docs.rs/delegation-codegen/badge.svg "Rust docs")](https://docs.rs/delegation-codegen)
 
 [API Docs](https://docs.rs/delegation-codegen) |
-[Changelog](https://github.com/arcane-rs/delegation/blob/main/CHANGELOG.md)
+[Changelog](https://github.com/arcane-rs/delegation/blob/v0.3.0/CHANGELOG.md)
 
 Code generation for [`delegation`] crate.
 
@@ -32,5 +32,5 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 
 
 [`delegation`]: https://docs.rs/delegation
-[APACHE]: https://github.com/arcane-rs/delegation/blob/main/LICENSE-APACHE
-[MIT]: https://github.com/arcane-rs/delegation/blob/main/LICENSE-MIT
+[APACHE]: https://github.com/arcane-rs/delegation/blob/v0.3.0/LICENSE-APACHE
+[MIT]: https://github.com/arcane-rs/delegation/blob/v0.3.0/LICENSE-MIT
