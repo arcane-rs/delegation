@@ -3,12 +3,28 @@ name = "delegation"
 version = "0.0.0"
 edition = "2021"
 description = "Macro-based delegation for enums and structs."
-authors = ["Kai Ren <tyranron@gmail.com>"]
 license = "MIT OR Apache-2.0"
+authors = [
+    "Mikhail Bashilov <m.bashilov.srg@gmail.com>",
+    "Kai Ren <tyranron@gmail.com>",
+]
 documentation = "https://docs.rs/delegation"
 homepage = "https://github.com/arcane-rs/delegation"
 repository = "https://github.com/arcane-rs/delegation"
 readme = "README.md"
-include = ["/src/", "/LICENSE-APACHE", "/LICENSE-MIT", "/README.md"]
+categories = ["rust-patterns"]
+keywords = ["delegate", "delegation", "dispatch", "enum", "optimization"]
+include = ["/benches/", "/src/", "CHANGELOG.md", "/LICENSE-APACHE", "/LICENSE-MIT", "/README.md"]
 
 [dependencies]
+codegen = { version = "0.0.0", package = "delegation-codegen", path = "codegen" }
+
+[dev-dependencies]
+criterion = { version = "0.5", default-features = false }
+
+[[bench]]
+name = "delegate"
+harness = false
+
+[workspace]
+members = [".", "codegen"]

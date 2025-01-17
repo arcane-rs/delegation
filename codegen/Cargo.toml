@@ -1,0 +1,31 @@
+[package]
+name = "delegation-codegen"
+version = "0.0.0"
+edition = "2021"
+description = "Code generation for `delegation` crate."
+license = "MIT OR Apache-2.0"
+authors = [
+    "Mikhail Bashilov <m.bashilov.srg@gmail.com>",
+    "Kai Ren <tyranron@gmail.com>",
+]
+documentation = "https://docs.rs/delegation-codegen"
+homepage = "https://github.com/arcane-rs/delegation"
+repository = "https://github.com/arcane-rs/delegation"
+readme = "README.md"
+categories = ["rust-patterns"]
+keywords = ["codegen", "delegation", "macro"]
+include = ["/src/", "/CHANGELOG.md", "/LICENSE-APACHE", "/LICENSE-MIT", "/README.md"]
+
+[lib]
+proc-macro = true
+
+[dependencies]
+itertools = "0.14"
+proc-macro-crate = "3.2"
+proc-macro2 = { version = "1.0.28", features = ["span-locations"] }
+quote = "1.0.9"
+syn = { version = "2.0", features = ["clone-impls", "extra-traits", "full", "parsing", "printing", "proc-macro", "visit", "visit-mut"], default-features = false }
+
+[dev-dependencies]
+delegation = { path = ".." }
+trybuild = "1.0.56"

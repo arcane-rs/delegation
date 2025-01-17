@@ -1,0 +1,5 @@
+error: enum variant must have exactly one field
+ --> tests/errors/variant_with_multiple_fields.rs:5:11
+  |
+5 |     First { first: String, last: String },
+  |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

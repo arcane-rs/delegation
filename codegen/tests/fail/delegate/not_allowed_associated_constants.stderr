@@ -1,0 +1,5 @@
+error: only trait methods with untyped receiver are allowed
+ --> tests/errors/not_allowed_associated_constants.rs:5:5
+  |
+5 |     const ID: usize;
+  |     ^^^^^
