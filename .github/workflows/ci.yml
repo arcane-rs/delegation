@@ -23,7 +23,10 @@ jobs:
   pr:
     if: ${{ github.event_name == 'pull_request' }}
     needs:
+      - bench
       - clippy
+      - example
+      - msrv
       - rustdoc
       - rustfmt
       - test
@@ -66,6 +69,64 @@ jobs:
   ###########
   # Testing #
   ###########
+
+  bench:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: stable
+
+      - run: cargo clippy -p delegation --benches -- -D warnings
+      - run: cargo bench -p delegation
+
+  example:
+    strategy:
+      fail-fast: false
+      matrix:
+        example:
+          - basic
+        os:
+          - ubuntu
+          - macOS
+          - windows
+        toolchain:
+          - stable
+          - beta
+          - nightly
+    runs-on: ${{ matrix.os }}-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
+
+      - run: cargo run --example ${{ matrix.example }}
+        env:
+          RUSTFLAGS: -D warnings
+
+  msrv:
+    name: MSRV
+    strategy:
+      fail-fast: false
+      matrix:
+        msrv: ["1.81.0"]
+        os: ["ubuntu", "macOS", "windows"]
+    runs-on: ${{ matrix.os }}-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: nightly
+      - uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: ${{ matrix.msrv }}
+
+      - run: cargo +nightly update -Z minimal-versions
+
+      - run: make test.cargo crate=delegation-codegen
+      - run: make test.cargo crate=delegation
 
   test:
     strategy:

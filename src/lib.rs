@@ -154,11 +154,12 @@
 #[doc(hidden)]
 pub mod private; // Not part of the public API.
 
+#[doc(inline)]
+pub use codegen::delegate;
+
 #[cfg(test)]
 #[doc(hidden)]
 mod used_only_in_benches {
     use criterion as _;
+    use regex as _;
 }
-
-#[doc(inline)]
-pub use codegen::delegate;
