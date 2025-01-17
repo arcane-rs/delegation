@@ -1,7 +1,7 @@
 `delegation` changelog
-====================
+======================
 
-All user visible changes to `delegation` crate will be documented in this file. This project uses [Semantic Versioning 2.0.0].
+All user visible changes to this project will be documented in this file. This project uses [Semantic Versioning 2.0.0].
 
 
 
@@ -12,11 +12,11 @@ All user visible changes to `delegation` crate will be documented in this file. 
 ### Added
 
 - Codegen:
-    - `delegate` macro (#???).
+    - `delegate` macro (#1).
 - Machinery:
-    - `Either` and `Void` enums (#???);
-    - `External` and `Wrapper` structs (#???);
-    - `Convert` and `TypeOf` traits (#???).
+    - `Either` and `Void` enums (#1);
+    - `External` and `Wrapper` structs (#1);
+    - `Convert` and `TypeOf` traits (#1).
 
 
 

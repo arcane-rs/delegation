@@ -1,14 +1,9 @@
-# Contributing
-
-Improvements of any kind are welcome!
-
-If you have any questions, please check issues first to see there is no similar question. If there is no duplicates, feel free to open a new issue.
-
-
-
-
 Contribution Guide
 ==================
+
+🎈 Thanks for your help improving the project! We are so happy to have you!
+
+**No contribution is too small and all contributions are valued.**
 
 1. [Code style](#code-style)
 
@@ -207,11 +202,11 @@ Other **code definitions** should be **referred via ```[`Entity`]``` marking** (
 
 ```rust
 /// Type of [`User`]'s unique identifier.
-/// 
+///
 /// # Constraints
-/// 
+///
 /// - It **must not be zero**.
-/// - It _should not_ overflow [`i64::max_value`] due to usage in database.
+/// - It _should not_ overflow [`i64::MAX`] due to usage in database.
 struct UserId(u64);
 ```
 
@@ -225,7 +220,7 @@ struct UserId(u64);
     /// ## Constraints
     /// 
     /// - It **must not be zero**.
-    /// - It _should not_ overflow [`i64::max_value`] due to usage in database.
+    /// - It _should not_ overflow [`i64::MAX`] due to usage in database.
     struct UserId(u64);
     ```
 
@@ -237,7 +232,7 @@ struct UserId(u64);
     /// # Constraints
     /// 
     /// - It **must not be zero**.
-    /// - It _should not_ overflow `i64::max_value` due to usage in database.
+    /// - It _should not_ overflow `i64::MAX` due to usage in database.
     struct UserId(u64);
     ```
 
@@ -249,7 +244,7 @@ struct UserId(u64);
     /// # Constraints
     /// 
     /// - It __must not be zero__.
-    /// - It *should not* overflow [`i64::max_value`] due to usage in database.
+    /// - It *should not* overflow [`i64::MAX`] due to usage in database.
     struct UserId(u64);
     ```
 
