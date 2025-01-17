@@ -51,17 +51,17 @@ impl Parse for Definition {
         let mut generics = input
             .peek(token::For)
             .then(|| {
-                let _ = input.parse::<token::For>()?;
+                _ = input.parse::<token::For>()?;
                 input.parse::<syn::Generics>()
             })
             .transpose()?;
 
         let trait_path = input.parse()?;
 
-        let _ = input.parse::<token::As>()?;
+        _ = input.parse::<token::As>()?;
         let wrapper_ty = input.parse()?;
 
-        let _ = input.parse::<token::For>()?;
+        _ = input.parse::<token::For>()?;
         let self_ty = input.parse()?;
 
         if let Some(where_clause) = input.parse::<Option<syn::WhereClause>>()? {
@@ -104,7 +104,7 @@ impl Definition {
     ///
     /// [`Type`]: syn::Type
     fn specify_type(&mut self) {
-        self.template.self_ty = self.self_ty.clone().into()
+        self.template.self_ty = self.self_ty.clone().into();
     }
 
     /// Replaces template's trait with the specified one.
@@ -116,7 +116,7 @@ impl Definition {
             .trait_path
             .segments
             .last()
-            .expect("empty trait path")
+            .unwrap_or_else(|| unreachable!("empty trait path"))
             .arguments
         {
             let mut binder = GenericBinder {
@@ -164,15 +164,8 @@ impl Definition {
             //   |    |            |
             // qself  path seg 1   path seg 2 (position)
             let syn::Type::Path(syn::TypePath {
-                qself:
-                    Some(syn::QSelf {
-                        lt_token: _,
-                        ty,
-                        as_token: _,
-                        gt_token: _,
-                        position: _,
-                    }),
-                path: _,
+                qself: Some(syn::QSelf { ty: qself_ty, .. }),
+                ..
             }) = ty
             else {
                 return;
@@ -182,16 +175,9 @@ impl Definition {
             //   |    |                       |
             // qself  path seg 1              path seg 2 (position)
             let syn::Type::Path(syn::TypePath {
-                qself:
-                    Some(syn::QSelf {
-                        lt_token: _,
-                        ty: _,
-                        as_token: _,
-                        gt_token: _,
-                        position,
-                    }),
+                qself: Some(syn::QSelf { position, .. }),
                 path,
-            }) = ty.as_mut()
+            }) = qself_ty.as_mut()
             else {
                 return;
             };
@@ -208,12 +194,7 @@ impl Definition {
 
         let replace_selfcall = |block: &mut syn::Block| {
             let Some(syn::Stmt::Expr(
-                syn::Expr::Call(syn::ExprCall {
-                    attrs: _,
-                    func,
-                    paren_token: _,
-                    args: _,
-                }),
+                syn::Expr::Call(syn::ExprCall { func, .. }),
                 _,
             )) = block.stmts.first_mut()
             else {
@@ -221,9 +202,9 @@ impl Definition {
             };
 
             let syn::Expr::Path(syn::ExprPath {
-                attrs: _,
                 qself: Some(qself),
                 path,
+                ..
             }) = func.as_mut()
             else {
                 return;
@@ -252,12 +233,7 @@ impl Definition {
                 // uses `Self` without fully qualified paths.
                 if is_external {
                     for arg in &mut m.sig.inputs {
-                        if let syn::FnArg::Typed(syn::PatType {
-                            attrs: _,
-                            pat: _,
-                            colon_token: _,
-                            ty,
-                        }) = arg
+                        if let syn::FnArg::Typed(syn::PatType { ty, .. }) = arg
                         {
                             replace_sig_type(ty);
                         }

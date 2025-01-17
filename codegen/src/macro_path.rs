@@ -26,8 +26,8 @@ impl MacroPath {
 
 impl Default for MacroPath {
     fn default() -> Self {
-        let crate_name =
-            crate_name(Self::CRATE_NAME).expect("can't find macro definition");
+        let crate_name = crate_name(Self::CRATE_NAME)
+            .unwrap_or_else(|_err| unreachable!("can't find macro definition"));
         let crate_name = match &crate_name {
             FoundCrate::Name(name) => name.as_str(),
             FoundCrate::Itself => Self::CRATE_NAME,

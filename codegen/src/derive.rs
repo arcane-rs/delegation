@@ -39,7 +39,7 @@ impl Parse for Args {
                 syn::Error::new(input.span(), "unexpected attribute argument")
             })?;
         let args;
-        let _ = syn::parenthesized!(args in input);
+        _ = syn::parenthesized!(args in input);
 
         this.derive = Punctuated::parse_terminated(&args)?;
 
@@ -65,9 +65,9 @@ impl InnerArgs {
         let args = attrs
             .iter()
             .filter(|attr| attr.path().is_ident("delegate"))
-            .map(|attr| attr.parse_args::<Self>())
+            .map(syn::Attribute::parse_args::<Self>)
             .at_most_one()
-            .map_err(|_| {
+            .map_err(|_err| {
                 syn::Error::new(
                     Span::call_site(),
                     "expected exactly one #[delegate(..)] attribute",
@@ -89,10 +89,10 @@ impl Parse for InnerArgs {
             return Ok(this);
         }
 
-        let _ = input.parse::<token::As>().map_err(|e| {
+        _ = input.parse::<token::As>().map_err(|e| {
             syn::Error::new(e.span(), "unexpected attribute argument")
         })?;
-        let _ = input.parse::<token::Eq>()?;
+        _ = input.parse::<token::Eq>()?;
         let lit = input.parse::<syn::LitStr>()?;
 
         this.r#as = Some(syn::parse_str(&lit.value())?);
@@ -104,7 +104,10 @@ impl Parse for InnerArgs {
 /// Definition of `#[delegate]` macro expansion on types (structs or enums).
 #[derive(Debug)]
 pub(crate) struct Definition {
+    /// Type identifier of this [`Definition`].
     ident: syn::Ident,
+
+    /// Generics of this [`Definition`].
     generics: syn::Generics,
 
     /// Delegated enum [`Variant`]s or a single struct [`Field`].
@@ -118,6 +121,14 @@ pub(crate) struct Definition {
 
     /// Path to the macro definitions.
     macro_path: MacroPath,
+}
+
+impl ToTokens for Definition {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        self.item.to_tokens(tokens);
+        self.impl_convert().to_tokens(tokens);
+        self.derive_traits().to_tokens(tokens);
+    }
 }
 
 impl Definition {
@@ -159,17 +170,7 @@ impl Definition {
             macro_path: MacroPath::default(),
         })
     }
-}
 
-impl ToTokens for Definition {
-    fn to_tokens(&self, tokens: &mut TokenStream) {
-        self.item.to_tokens(tokens);
-        self.impl_convert().to_tokens(tokens);
-        self.derive_traits().to_tokens(tokens);
-    }
-}
-
-impl Definition {
     /// Implements `Convert` trait for the delegated type.
     fn impl_convert(&self) -> TokenStream {
         let macro_path = &self.macro_path;
@@ -251,19 +252,18 @@ impl Definition {
 
         self.derived_traits
             .iter()
-            .cloned()
             .map(|p| {
                 let hrg = p.higher_rank_generics();
                 let trait_path = &p.path;
                 let wrapper = p.wrapper_ty.as_ref().map_or_else(
                     || quote! { #macro_path ::Wrapper },
-                    |ext_trait| ext_trait.to_token_stream(),
+                    ToTokens::to_token_stream,
                 );
-                let macro_path = p.macro_path();
+                let macro_rules_path = p.macro_rules_path();
                 let where_clause = p.where_clause();
 
                 quote! {
-                    #macro_path!(
+                    #macro_rules_path!(
                         #hrg
                         #trait_path as #wrapper
                         for #ident #ty_gens
@@ -349,11 +349,11 @@ impl Definition {
             quote! { #macro_path::Either }.to_tokens(tokens);
             token::PathSep::default().to_tokens(tokens);
             syn::Ident::new(ident, Span::call_site()).to_tokens(tokens);
-            token::Paren::default().surround(tokens, |tokens| {
+            token::Paren::default().surround(tokens, |toks| {
                 if count == 0 {
-                    expr.to_tokens(tokens);
+                    expr.to_tokens(toks);
                 } else {
-                    sequence(tokens, count - 1, expr, macro_path);
+                    sequence(toks, count - 1, expr, macro_path);
                 }
             });
         }
@@ -362,26 +362,23 @@ impl Definition {
 
         token::Match::default().to_tokens(&mut tokens);
         token::SelfValue::default().to_tokens(&mut tokens);
-        token::Brace::default().surround(&mut tokens, |tokens| {
+        token::Brace::default().surround(&mut tokens, |toks| {
             for (i, variant) in variants.as_ref().iter().enumerate() {
-                token::SelfType::default().to_tokens(tokens);
-                token::PathSep::default().to_tokens(tokens);
-                variant.ident.to_tokens(tokens);
+                token::SelfType::default().to_tokens(toks);
+                token::PathSep::default().to_tokens(toks);
+                variant.ident.to_tokens(toks);
 
-                let val = match &variant.field_ident {
-                    Some(ident) => {
-                        token::Brace::default().surround(tokens, |tokens| {
-                            ident.to_tokens(tokens);
-                        });
-                        ident.clone()
-                    }
-                    None => {
-                        let ident = syn::Ident::new("v", Span::call_site());
-                        token::Paren::default().surround(tokens, |tokens| {
-                            ident.to_tokens(tokens);
-                        });
-                        ident
-                    }
+                let val = if let Some(ident) = &variant.field_ident {
+                    token::Brace::default().surround(toks, |t| {
+                        ident.to_tokens(t);
+                    });
+                    ident.clone()
+                } else {
+                    let ident = syn::Ident::new("v", Span::call_site());
+                    token::Paren::default().surround(toks, |t| {
+                        ident.to_tokens(t);
+                    });
+                    ident
                 };
 
                 let expr = variant.wrapper_ty.as_ref().map_or_else(
@@ -394,9 +391,9 @@ impl Definition {
                     },
                 );
 
-                token::FatArrow::default().to_tokens(tokens);
-                token::Brace::default().surround(tokens, |tokens| {
-                    sequence(tokens, i, &expr, &self.macro_path);
+                token::FatArrow::default().to_tokens(toks);
+                token::Brace::default().surround(toks, |t| {
+                    sequence(t, i, &expr, &self.macro_path);
                 });
             }
         });
@@ -414,7 +411,9 @@ impl Definition {
         let macro_path = &self.macro_path;
         let ident = field.ident();
 
-        if let Some(as_ty) = field.wrapper_ty() {
+        field.wrapper_ty().map_or_else(|| {
+            quote! { #macro_path::Either::Left(#ref_tok #mut_tok self. #ident) }
+        }, |as_ty| {
             let ty = field.ty();
 
             quote! {
@@ -423,9 +422,7 @@ impl Definition {
                         as ::core::convert::From< #ref_tok #mut_tok #ty >
                 >::from(#ref_tok #mut_tok self. #ident))
             }
-        } else {
-            quote! { #macro_path::Either::Left(#ref_tok #mut_tok self. #ident) }
-        }
+        })
     }
 }
 
@@ -462,7 +459,10 @@ impl DelegatedTypes {
 enum Field {
     /// [`Field`] of named struct.
     Named {
+        /// Identifier of this [`Field`].
         ident: syn::Ident,
+
+        /// Type of this [`Field`].
         ty: Box<syn::Type>,
 
         /// Wrapper [`Type`] for external delegation.
@@ -473,7 +473,10 @@ enum Field {
 
     /// [`Field`] of tuple struct.
     Unnamed {
+        /// Index of this [`Field`].
         index: syn::Index,
+
+        /// Type of this [`Field`].
         ty: Box<syn::Type>,
 
         /// Wrapper [`Type`] for external delegation.
@@ -498,7 +501,7 @@ impl Field {
     /// Returns a [`Type`] of this [`Field`].
     ///
     /// [`Type`]: syn::Type
-    fn ty(&self) -> &syn::Type {
+    const fn ty(&self) -> &syn::Type {
         match self {
             Self::Named { ty, .. } | Self::Unnamed { ty, .. } => ty,
         }
@@ -507,7 +510,7 @@ impl Field {
     /// Returns wrapper [`Type`] for external delegating.
     ///
     /// [`Type`]: syn::Type
-    fn wrapper_ty(&self) -> Option<&syn::Type> {
+    const fn wrapper_ty(&self) -> Option<&syn::Type> {
         match self {
             Self::Named { wrapper_ty, .. }
             | Self::Unnamed { wrapper_ty, .. } => wrapper_ty.as_ref(),
@@ -524,7 +527,7 @@ impl TryFrom<&mut syn::Fields> for Field {
             || syn::Error::new(span, "struct must have exactly one field"),
         )?;
         let args = InnerArgs::from_attrs(field.attrs.as_mut())?;
-        let wrapper_ty = args.and_then(|args| args.r#as);
+        let wrapper_ty = args.and_then(|a| a.r#as);
 
         Ok(match field.ident.as_ref() {
             Some(ident) => Self::Named {
@@ -616,7 +619,7 @@ impl DeriveTrait {
     /// Returns [`Path`] to the macro implementing this trait.
     ///
     /// [`Path`]: syn::Path
-    fn macro_path(&self) -> syn::Path {
+    fn macro_rules_path(&self) -> syn::Path {
         if let Some(wrapper_ty) = &self.wrapper_ty {
             return wrapper_ty.clone();
         }
@@ -660,7 +663,7 @@ impl Parse for DeriveTrait {
         let mut generics = input
             .peek(token::For)
             .then(|| {
-                let _ = input.parse::<token::For>()?;
+                _ = input.parse::<token::For>()?;
                 input.parse::<syn::Generics>()
             })
             .transpose()?;
@@ -668,7 +671,7 @@ impl Parse for DeriveTrait {
         let wrapper_ty = input
             .peek(token::As)
             .then(|| {
-                let _ = input.parse::<token::As>()?;
+                _ = input.parse::<token::As>()?;
                 input.parse()
             })
             .transpose()?;
@@ -688,7 +691,10 @@ impl Parse for DeriveTrait {
 /// Item passed to [`Definition`].
 #[derive(Clone, Debug)]
 enum Item {
+    /// Item is an enum.
     Enum(syn::ItemEnum),
+
+    /// Item is a struct.
     Struct(syn::ItemStruct),
 }
 

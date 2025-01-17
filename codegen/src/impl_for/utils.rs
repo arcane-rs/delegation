@@ -33,7 +33,7 @@ impl GenericsExt for syn::Generics {
 
         for (param, arg) in self.params.iter().zip(args.args.iter()) {
             let param = GenPar::from(param);
-            let arg = GenArg::try_from(arg).map_err(|_| {
+            let arg = GenArg::try_from(arg).map_err(|_err| {
                 syn::Error::new_spanned(
                     arg,
                     "Generic argument must be a type, constant \
@@ -41,7 +41,7 @@ impl GenericsExt for syn::Generics {
                 )
             })?;
 
-            let _ = generics.insert(param, arg);
+            drop(generics.insert(param, arg));
         }
 
         Ok(generics)
@@ -56,40 +56,39 @@ pub(super) struct GenericBinder<'g> {
 }
 
 impl VisitMut for GenericBinder<'_> {
-    fn visit_lifetime_mut(&mut self, lt: &mut syn::Lifetime) {
-        if let Some(GenArg::Lifetime(l)) =
-            self.generics.get(&GenPar::from(&*lt))
+    fn visit_lifetime_mut(&mut self, i: &mut syn::Lifetime) {
+        if let Some(GenArg::Lifetime(l)) = self.generics.get(&GenPar::from(&*i))
         {
-            *lt = l.clone();
+            *i = l.clone();
         } else {
-            visit_mut::visit_lifetime_mut(self, lt);
+            visit_mut::visit_lifetime_mut(self, i);
         };
     }
 
-    fn visit_block_mut(&mut self, block: &mut syn::Block) {
-        let val = GenPar::try_from(&*block)
+    fn visit_block_mut(&mut self, i: &mut syn::Block) {
+        let val = GenPar::try_from(&*i)
             .ok()
             .and_then(|ty| self.generics.get(&ty));
 
         match val {
             Some(GenArg::Type(t)) => {
-                block.stmts = vec![parse_quote! { #t }];
+                i.stmts = vec![parse_quote! { #t }];
             }
-            Some(GenArg::Const(b)) => *block = b.clone(),
+            Some(GenArg::Const(b)) => *i = b.clone(),
             Some(GenArg::Lifetime(_)) | None => {
-                visit_mut::visit_block_mut(self, block)
+                visit_mut::visit_block_mut(self, i);
             }
         }
     }
 
-    fn visit_type_mut(&mut self, arg: &mut syn::Type) {
-        if let Some(GenArg::Type(t)) = GenPar::try_from(&*arg)
+    fn visit_type_mut(&mut self, i: &mut syn::Type) {
+        if let Some(GenArg::Type(t)) = GenPar::try_from(&*i)
             .ok()
             .and_then(|ty| self.generics.get(&ty))
         {
-            *arg = t.clone();
+            *i = t.clone();
         } else {
-            visit_mut::visit_type_mut(self, arg);
+            visit_mut::visit_type_mut(self, i);
         };
     }
 }
@@ -97,8 +96,13 @@ impl VisitMut for GenericBinder<'_> {
 /// Generic type parameter to be replaced with [`GenArg`]ument.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub(super) enum GenPar {
+    /// Lifetime parameter.
     Lifetime(syn::Ident),
+
+    /// Type parameter.
     Type(syn::Ident),
+
+    /// Const parameter.
     Const(syn::Ident),
 }
 
@@ -126,7 +130,7 @@ impl<'a> TryFrom<&'a syn::Type> for GenPar {
     fn try_from(ty: &'a syn::Type) -> Result<Self, Self::Error> {
         syn::parse2::<syn::Ident>(ty.to_token_stream())
             .map(Self::Type)
-            .map_err(|_| ())
+            .map_err(|_err| ())
     }
 }
 
@@ -148,8 +152,13 @@ impl<'a> TryFrom<&'a syn::Block> for GenPar {
 /// Generic argument to replace a [`GenPar`]ameter.
 #[derive(Clone, Debug)]
 pub(super) enum GenArg {
+    /// Lifetime argument.
     Lifetime(syn::Lifetime),
+
+    /// Type argument.
     Type(syn::Type),
+
+    /// Const argument.
     Const(syn::Block),
 }
 
@@ -162,11 +171,9 @@ impl<'a> TryFrom<&'a syn::GenericArgument> for GenArg {
         Ok(match arg {
             A::Lifetime(lt) => Self::Lifetime(lt.clone()),
             A::Type(ty) => Self::Type(ty.clone()),
-            A::Const(syn::Expr::Block(syn::ExprBlock {
-                attrs: _,
-                label: _,
-                block,
-            })) => Self::Const(block.clone()),
+            A::Const(syn::Expr::Block(syn::ExprBlock { block, .. })) => {
+                Self::Const(block.clone())
+            }
             A::Const(_)
             | A::Constraint(_)
             | A::AssocType(_)
@@ -179,7 +186,12 @@ impl<'a> TryFrom<&'a syn::GenericArgument> for GenArg {
             // TODO: Use `non_exhaustive_omitted_patterns`, once stabilized.
             //       https://github.com/rust-lang/rust/issues/89554
             // #[cfg_attr(test, deny(non_exhaustive_omitted_patterns))]
-            arg => panic!("{arg:#?} not covered"),
+            arg => {
+                return Err(syn::Error::new_spanned(
+                    arg,
+                    format!("{arg:#?} not covered"),
+                ));
+            }
         })
     }
 }
@@ -223,8 +235,8 @@ struct ReplaceLifetimes<'r> {
 }
 
 impl VisitMut for ReplaceLifetimes<'_> {
-    fn visit_lifetime_mut(&mut self, l: &mut syn::Lifetime) {
-        *l = self.replace_with.clone();
-        visit_mut::visit_lifetime_mut(self, l);
+    fn visit_lifetime_mut(&mut self, i: &mut syn::Lifetime) {
+        *i = self.replace_with.clone();
+        visit_mut::visit_lifetime_mut(self, i);
     }
 }

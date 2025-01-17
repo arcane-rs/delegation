@@ -46,24 +46,24 @@ impl Parse for Args {
 
         loop {
             if input.peek(token::For) {
-                let _ = input.parse::<token::For>()?;
+                _ = input.parse::<token::For>()?;
                 let args;
-                let _ = syn::parenthesized!(args in input);
+                _ = syn::parenthesized!(args in input);
                 this.r#for = Punctuated::parse_terminated(&args)?;
             } else if input.peek(token::As) {
-                let _ = input.parse::<token::As>()?;
-                let _ = input.parse::<token::Eq>()?;
+                _ = input.parse::<token::As>()?;
+                _ = input.parse::<token::Eq>()?;
                 let lit = input.parse::<syn::LitStr>()?;
                 this.r#as = Some(syn::parse_str(&lit.value())?);
             } else {
-                Err(syn::Error::new(
+                return Err(syn::Error::new(
                     input.span(),
                     "unexpected attribute argument",
-                ))?
+                ));
             };
 
             if input.peek(token::Comma) {
-                let _ = input.parse::<token::Comma>()?;
+                _ = input.parse::<token::Comma>()?;
             } else {
                 break;
             }
@@ -149,8 +149,40 @@ pub(super) struct Definition {
     macro_path: MacroPath,
 }
 
+impl ToTokens for Definition {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        self.define_item().to_tokens(tokens);
+
+        self.generate_scope().to_tokens(tokens);
+        self.blanket_impl_for_scope().to_tokens(tokens);
+
+        self.generate_binds().to_tokens(tokens);
+        self.assign_types_to_binds().to_tokens(tokens);
+
+        self.generate_owned_trait().to_tokens(tokens);
+        self.impl_owned_trait_for_either().to_tokens(tokens);
+        self.impl_owned_trait_for_void().to_tokens(tokens);
+
+        self.generate_ref_trait(false).to_tokens(tokens);
+        self.impl_ref_trait_for_either(false).to_tokens(tokens);
+        self.impl_ref_trait_for_void(false).to_tokens(tokens);
+
+        self.generate_ref_trait(true).to_tokens(tokens);
+        self.impl_ref_trait_for_either(true).to_tokens(tokens);
+        self.impl_ref_trait_for_void(true).to_tokens(tokens);
+
+        self.blanket_impl_for_wrapper_type().to_tokens(tokens);
+        self.impl_macro_for_delegated_trait().to_tokens(tokens);
+
+        self.impl_trait_for().to_tokens(tokens);
+
+        self.generate_self_bound_assertions().to_tokens(tokens);
+    }
+}
+
 impl Definition {
     /// Parses [`Definition`] from a [`syn::ItemTrait`].
+    #[expect(clippy::too_many_lines, reason = "TODO: Refactor")]
     pub(super) fn parse(
         mut item: syn::ItemTrait,
         args: TokenStream,
@@ -172,8 +204,12 @@ impl Definition {
         let mut methods_ref = Vec::new();
         let mut methods_ref_mut = Vec::new();
 
-        for item in &item.items {
-            match item {
+        for i in &item.items {
+            #[expect(
+                clippy::wildcard_enum_match_arm,
+                reason = "non exhaustive"
+            )]
+            match i {
                 syn::TraitItem::Fn(m) => match m.sig.receiver() {
                     Some(syn::Receiver {
                         reference: Some(_),
@@ -197,23 +233,30 @@ impl Definition {
                         ..
                     })
                     | None => {
-                        Err(syn::Error::new(
+                        return Err(syn::Error::new(
                             m.span(),
                             "all trait method must have an untyped receiver",
-                        ))?;
+                        ));
                     }
                 },
-                item @ (syn::TraitItem::Type(_)
+                i @ (syn::TraitItem::Type(_)
                 | syn::TraitItem::Const(_)
                 | syn::TraitItem::Macro(_)
-                | syn::TraitItem::Verbatim(_)) => Err(syn::Error::new(
-                    item.span(),
-                    "only trait methods with untyped receiver are allowed",
-                ))?,
+                | syn::TraitItem::Verbatim(_)) => {
+                    return Err(syn::Error::new(
+                        i.span(),
+                        "only trait methods with untyped receiver are allowed",
+                    ))
+                }
                 // TODO: Use `non_exhaustive_omitted_patterns`, once stabilized.
                 //       https://github.com/rust-lang/rust/issues/89554
                 // #[cfg_attr(test, deny(non_exhaustive_omitted_patterns))]
-                item => panic!("{item:#?} not covered"),
+                i => {
+                    return Err(syn::Error::new(
+                        i.span(),
+                        format!("{i:#?} not covered"),
+                    ))
+                }
             }
         }
 
@@ -294,40 +337,7 @@ impl Definition {
             macro_path,
         })
     }
-}
 
-impl ToTokens for Definition {
-    fn to_tokens(&self, tokens: &mut TokenStream) {
-        self.define_item().to_tokens(tokens);
-
-        self.generate_scope().to_tokens(tokens);
-        self.blanket_impl_for_scope().to_tokens(tokens);
-
-        self.generate_binds().to_tokens(tokens);
-        self.assign_types_to_binds().to_tokens(tokens);
-
-        self.generate_owned_trait().to_tokens(tokens);
-        self.impl_owned_trait_for_either().to_tokens(tokens);
-        self.impl_owned_trait_for_void().to_tokens(tokens);
-
-        self.generate_ref_trait(false).to_tokens(tokens);
-        self.impl_ref_trait_for_either(false).to_tokens(tokens);
-        self.impl_ref_trait_for_void(false).to_tokens(tokens);
-
-        self.generate_ref_trait(true).to_tokens(tokens);
-        self.impl_ref_trait_for_either(true).to_tokens(tokens);
-        self.impl_ref_trait_for_void(true).to_tokens(tokens);
-
-        self.blanket_impl_for_wrapper_type().to_tokens(tokens);
-        self.impl_macro_for_delegated_trait().to_tokens(tokens);
-
-        self.impl_trait_for().to_tokens(tokens);
-
-        self.generate_self_bound_assertions().to_tokens(tokens);
-    }
-}
-
-impl Definition {
     /// Defines trait item.
     ///
     /// Item differs relying on `#[delegate(as = "..")]` attribute:
@@ -1031,7 +1041,6 @@ impl Definition {
 
         self.delegate_for
             .iter()
-            .cloned()
             .map(|for_ty| {
                 let hrg = for_ty.higher_rank_generics();
                 let ty = &for_ty.ty;
@@ -1059,6 +1068,10 @@ impl Definition {
         ) -> impl Iterator<Item = &syn::TraitBound> {
             let self_: syn::Type = parse_quote! { Self };
 
+            #[expect(
+                clippy::wildcard_enum_match_arm,
+                reason = "non exhaustive"
+            )]
             match pred {
                 syn::WherePredicate::Type(syn::PredicateType {
                     bounded_ty,
@@ -1160,7 +1173,7 @@ impl Definition {
                 sig.expand_lifetimes(parse_quote! { '__delegate }, || {
                     lt_count += 1;
                     syn::Lifetime::new(
-                        &format!("'__delegate{}", lt_count),
+                        &format!("'__delegate{lt_count}"),
                         Span::call_site(),
                     )
                 });
@@ -1241,6 +1254,7 @@ impl Definition {
 /// Type to delegate the trait for.
 #[derive(Clone, Debug)]
 struct ForTy {
+    /// Type to delegate the trait for.
     ty: syn::Path,
 
     /// [`Generics`] to be used in `impl` block.
@@ -1282,7 +1296,7 @@ impl Parse for ForTy {
         let mut generics = input
             .peek(token::For)
             .then(|| {
-                let _ = input.parse::<token::For>()?;
+                _ = input.parse::<token::For>()?;
                 input.parse()
             })
             .transpose()?;

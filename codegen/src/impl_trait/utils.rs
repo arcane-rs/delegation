@@ -69,13 +69,21 @@ impl GenericsExt for syn::Generics {
     }
 
     fn bound_type_to_lifetimes(&mut self, ty: &syn::Type) {
+        /// Visitor for collecting types containing [`syn::Lifetime`]s.
         pub(super) struct CollectTypesWithLifetimesVisitor {
+            /// [`syn::Lifetime`]s to search for.
             lifetimes: HashSet<syn::Ident>,
 
+            /// Collected [`syn::Type`]s.
             types: HashMap<syn::Type, Vec<syn::Lifetime>>,
         }
 
         impl CollectTypesWithLifetimesVisitor {
+            /// Creates a new [`CollectTypesWithLifetimesVisitor`].
+            #[expect(
+                single_use_lifetimes,
+                reason = "use anonymous lifetimes instead once supported"
+            )]
             fn new<'a>(
                 lifetimes: impl IntoIterator<Item = &'a syn::Lifetime>,
             ) -> Self {
@@ -90,20 +98,24 @@ impl GenericsExt for syn::Generics {
         }
 
         impl<'ast> Visit<'ast> for CollectTypesWithLifetimesVisitor {
-            fn visit_lifetime(&mut self, lt: &'ast syn::Lifetime) {
-                if self.lifetimes.contains(&lt.ident) {
-                    for (_, lifetimes) in self.types.iter_mut() {
-                        lifetimes.push(lt.clone());
+            fn visit_lifetime(&mut self, i: &'ast syn::Lifetime) {
+                if self.lifetimes.contains(&i.ident) {
+                    #[expect(
+                        clippy::iter_over_hash_type,
+                        reason = "order doesn't matter here"
+                    )]
+                    for lifetimes in self.types.values_mut() {
+                        lifetimes.push(i.clone());
                     }
                 }
 
-                visit::visit_lifetime(self, lt);
+                visit::visit_lifetime(self, i);
             }
 
-            fn visit_type(&mut self, t: &'ast syn::Type) {
-                let _ = self.types.insert(t.clone(), Vec::new());
+            fn visit_type(&mut self, i: &'ast syn::Type) {
+                drop(self.types.insert(i.clone(), Vec::new()));
 
-                visit::visit_type(self, t);
+                visit::visit_type(self, i);
             }
         }
 
@@ -112,7 +124,11 @@ impl GenericsExt for syn::Generics {
         );
         visitor.visit_type(ty);
 
-        for (ty, lt) in &visitor.types {
+        #[expect(
+            clippy::iter_over_hash_type,
+            reason = "order doesn't matter here"
+        )]
+        for (t, lt) in &visitor.types {
             if lt.is_empty() {
                 continue;
             }
@@ -120,24 +136,26 @@ impl GenericsExt for syn::Generics {
             self.where_clause
                 .get_or_insert_with(|| parse_quote! { where })
                 .predicates
-                .push(parse_quote! { #ty: #( #lt )+* });
+                .push(parse_quote! { #t: #( #lt )+* });
         }
     }
 
     fn replace_self_ty(&mut self, ty: &syn::Type) {
+        /// Visitor for replacing `Self` with provided type.
         struct ReplaceSelfTy<'a> {
+            /// Type to replace `Self` with.
             ty: &'a syn::Type,
         }
 
         impl VisitMut for ReplaceSelfTy<'_> {
-            fn visit_type_mut(&mut self, t: &mut syn::Type) {
-                if let syn::Type::Path(path) = t {
+            fn visit_type_mut(&mut self, i: &mut syn::Type) {
+                if let syn::Type::Path(path) = i {
                     if path.path.is_ident("Self") {
-                        *t = self.ty.clone();
+                        *i = self.ty.clone();
                     }
                 }
 
-                visit_mut::visit_type_mut(self, t);
+                visit_mut::visit_type_mut(self, i);
             }
         }
 
@@ -192,7 +210,7 @@ pub(super) trait SignatureExt {
     /// Expands all elided lifetimes in the [`Signature`].
     ///
     /// [`Signature`]: syn::Signature
-    fn expand_lifetimes<F>(&mut self, rec_lt: syn::Lifetime, expand_fn: F)
+    fn expand_lifetimes<F>(&mut self, receiver_lt: syn::Lifetime, expand_fn: F)
     where
         F: FnMut() -> syn::Lifetime;
 
@@ -261,7 +279,7 @@ impl SignatureExt for syn::Signature {
 
         // 3. Replace receiver's lifetime with `replace_with` in entire
         //    signature.
-        let _ = replacer.replaced.remove(&parse_quote! { '_ });
+        _ = replacer.replaced.remove(&parse_quote! { '_ });
         if !replacer.replaced.is_empty() {
             replacer.visit_signature_mut(self);
         }
@@ -285,12 +303,12 @@ impl SignatureExt for syn::Signature {
         //    `#replace_with: #self_lifetime` and
         //    `#self_lifetime: #replace_with` to indicate, that they are
         //    identical.
-        if let Some(self_lifetime) = replacer.replaced.iter().next() {
+        if let Some(self_lt) = replacer.replaced.iter().next() {
             if self.generics.params.len() == generic_params_len_before {
-                let replace_with = &replacer.replace_with;
+                let replace_lt = &replacer.replace_with;
                 let predicates: [syn::WherePredicate; 2] = [
-                    parse_quote! { #self_lifetime: #replace_with },
-                    parse_quote! { #replace_with: #self_lifetime },
+                    parse_quote! { #self_lt: #replace_lt },
+                    parse_quote! { #replace_lt: #self_lt },
                 ];
                 self.generics
                     .make_where_clause()
@@ -307,17 +325,18 @@ impl SignatureExt for syn::Signature {
         .visit_return_type_mut(&mut self.output);
     }
 
-    fn expand_lifetimes<F>(&mut self, ret_lt: syn::Lifetime, expand_fn: F)
+    #[expect(clippy::renamed_function_params, reason = "more readable")]
+    fn expand_lifetimes<F>(&mut self, return_lt: syn::Lifetime, expand_fn: F)
     where
         F: FnMut() -> syn::Lifetime,
     {
         // 1. Get or expand receiver lifetime.
-        let rec_lt = match self.inputs.first_mut() {
+        let receiver_lt = match self.inputs.first_mut() {
             Some(syn::FnArg::Receiver(rec)) => {
                 if let Some((_, lt)) = &mut rec.reference {
                     Some(&*lt.get_or_insert_with(|| {
-                        self.generics.params.push(parse_quote! { #ret_lt });
-                        ret_lt.clone()
+                        self.generics.params.push(parse_quote! { #return_lt });
+                        return_lt.clone()
                     }))
                 } else {
                     None
@@ -326,21 +345,18 @@ impl SignatureExt for syn::Signature {
             Some(syn::FnArg::Typed(_)) | None => return,
         };
 
-        // 2. Replace `'_` with `rec_lt` or `ret_lt` in signature's
+        // 2. Replace `'_` with `receiver_lt` or `return_lt` in signature's
         //    output.
         let mut replacer = ReplaceLifetimes {
-            replaced: [Some(parse_quote! { '_ })]
-                .into_iter()
-                .flatten()
-                .collect(),
-            replace_with: rec_lt.unwrap_or(&ret_lt),
+            replaced: iter::once(parse_quote! { '_ }).collect(),
+            replace_with: receiver_lt.unwrap_or(&return_lt),
             matched: 0,
         };
         replacer.visit_return_type_mut(&mut self.output);
 
         // 3. If no receiver's lifetime, create return type's lifetime.
-        if replacer.matched > 0 && rec_lt.is_none() {
-            self.generics.params.push(parse_quote! { #ret_lt });
+        if replacer.matched > 0 && receiver_lt.is_none() {
+            self.generics.params.push(parse_quote! { #return_lt });
         }
 
         // 4. Insert `replace_with` after every reference without a lifetime in
@@ -356,7 +372,7 @@ impl SignatureExt for syn::Signature {
             expanded: vec![],
         };
 
-        if ret_lt.ident != "_" {
+        if return_lt.ident != "_" {
             expander.visit_return_type_mut(&mut self.output);
         }
 
@@ -384,13 +400,16 @@ impl SignatureExt for syn::Signature {
         ///
         /// [`Lifetime`]: struct@syn::Lifetime
         struct CollectLifetimes {
+            /// Collected [`Lifetime`]s.
+            ///
+            /// [`Lifetime`]: struct@syn::Lifetime
             lifetimes: HashSet<syn::Lifetime>,
         }
 
         impl<'ast> Visit<'ast> for CollectLifetimes {
-            fn visit_lifetime(&mut self, lt: &'ast syn::Lifetime) {
-                if lt.ident != "_" {
-                    let _ = self.lifetimes.insert(lt.clone());
+            fn visit_lifetime(&mut self, i: &'ast syn::Lifetime) {
+                if i.ident != "_" {
+                    _ = self.lifetimes.insert(i.clone());
                 }
             }
         }
@@ -403,7 +422,7 @@ impl SignatureExt for syn::Signature {
         impl<'ast> Visit<'ast> for RemoveEarlyBoundedLifetimes<'_> {
             fn visit_lifetime_param(&mut self, i: &'ast syn::LifetimeParam) {
                 if i.bounds.iter().any(|b| *b == i.lifetime) {
-                    let _ = self.0.remove(&i.lifetime);
+                    _ = self.0.remove(&i.lifetime);
                 }
             }
 
@@ -412,7 +431,7 @@ impl SignatureExt for syn::Signature {
                 i: &'ast syn::PredicateLifetime,
             ) {
                 if i.bounds.iter().any(|b| *b == i.lifetime) {
-                    let _ = self.0.remove(&i.lifetime);
+                    _ = self.0.remove(&i.lifetime);
                 }
             }
         }
@@ -424,7 +443,7 @@ impl SignatureExt for syn::Signature {
 
         impl<'ast> Visit<'ast> for RemoveLifetimes<'_> {
             fn visit_lifetime(&mut self, i: &'ast syn::Lifetime) {
-                let _ = self.0.remove(i);
+                _ = self.0.remove(i);
             }
         }
 
@@ -433,7 +452,7 @@ impl SignatureExt for syn::Signature {
         };
 
         // 1. Collect all lifetimes occurring in the arguments.
-        for arg in self.inputs.iter() {
+        for arg in &self.inputs {
             match arg {
                 syn::FnArg::Receiver(_) => {}
                 syn::FnArg::Typed(syn::PatType { ty, .. }) => {
@@ -449,21 +468,22 @@ impl SignatureExt for syn::Signature {
         })) = self.inputs.first()
         {
             if lt.ident != "_" {
-                let _ = collector.lifetimes.remove(lt);
+                _ = collector.lifetimes.remove(lt);
             }
         };
 
         // 3. Remove lifetimes defined in trait's generics.
-        let method_lifetimes = self
-            .generics
-            .params
-            .iter()
-            .filter_map(|p| match p {
-                syn::GenericParam::Lifetime(lt) => Some(&lt.lifetime),
-                _ => None,
-            })
-            .cloned()
-            .collect::<HashSet<_>>();
+        let method_lifetimes =
+            self.generics
+                .params
+                .iter()
+                .filter_map(|p| match p {
+                    syn::GenericParam::Lifetime(lt) => Some(&lt.lifetime),
+                    syn::GenericParam::Const(_)
+                    | syn::GenericParam::Type(_) => None,
+                })
+                .cloned()
+                .collect::<HashSet<_>>();
         collector
             .lifetimes
             .retain(|lt| method_lifetimes.contains(lt));
@@ -510,13 +530,13 @@ struct ReplaceLifetimes<'r> {
 }
 
 impl VisitMut for ReplaceLifetimes<'_> {
-    fn visit_lifetime_mut(&mut self, l: &mut syn::Lifetime) {
-        if self.replaced.contains(l) {
-            *l = self.replace_with.clone();
+    fn visit_lifetime_mut(&mut self, i: &mut syn::Lifetime) {
+        if self.replaced.contains(i) {
+            *i = self.replace_with.clone();
             self.matched += 1;
         }
 
-        visit_mut::visit_lifetime_mut(self, l);
+        visit_mut::visit_lifetime_mut(self, i);
     }
 }
 
@@ -531,21 +551,24 @@ struct InsertLifetime<'i> {
 }
 
 impl VisitMut for InsertLifetime<'_> {
-    fn visit_type_reference_mut(&mut self, ty: &mut syn::TypeReference) {
-        if ty.lifetime.is_none() {
-            ty.lifetime = Some(self.inserted.clone());
+    fn visit_type_reference_mut(&mut self, i: &mut syn::TypeReference) {
+        if i.lifetime.is_none() {
+            i.lifetime = Some(self.inserted.clone());
         }
 
-        visit_mut::visit_type_reference_mut(self, ty);
+        visit_mut::visit_type_reference_mut(self, i);
     }
 }
 
+/// Expander of elided [`Lifetime`]s.
 struct ExpandLifetime<F>
 where
     F: FnMut() -> syn::Lifetime,
 {
+    /// Function to expand elided [`Lifetime`]s.
     expand_fn: F,
 
+    /// Collection of [`Lifetime`]s being expanded.
     expanded: Vec<syn::Lifetime>,
 }
 
@@ -553,23 +576,23 @@ impl<F> VisitMut for ExpandLifetime<F>
 where
     F: FnMut() -> syn::Lifetime,
 {
-    fn visit_lifetime_mut(&mut self, l: &mut syn::Lifetime) {
-        if l.ident == "_" {
-            *l = (self.expand_fn)();
-            self.expanded.push(l.clone());
+    fn visit_lifetime_mut(&mut self, i: &mut syn::Lifetime) {
+        if i.ident == "_" {
+            *i = (self.expand_fn)();
+            self.expanded.push(i.clone());
         }
 
-        visit_mut::visit_lifetime_mut(self, l);
+        visit_mut::visit_lifetime_mut(self, i);
     }
 
-    fn visit_type_reference_mut(&mut self, ty: &mut syn::TypeReference) {
-        if ty.lifetime.is_none() {
+    fn visit_type_reference_mut(&mut self, i: &mut syn::TypeReference) {
+        if i.lifetime.is_none() {
             let lt = (self.expand_fn)();
-            ty.lifetime = Some(lt.clone());
+            i.lifetime = Some(lt.clone());
             self.expanded.push(lt);
         }
 
-        visit_mut::visit_type_reference_mut(self, ty);
+        visit_mut::visit_type_reference_mut(self, i);
     }
 }
 
