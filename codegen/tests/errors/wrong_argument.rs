@@ -43,15 +43,15 @@ enum FullName {
 
 #[delegate]
 enum AliasName {
-    Alias(#[delegate(as = SomeType)] String),
+    Alias(#[delegate(as = "SomeType")] String),
 }
 
-#[delegate(as = SomeType)]
+#[delegate(as = "SomeType")]
 enum UserName {
     Name(String),
 }
 
-#[delegate(as = SomeType)]
+#[delegate(as = "SomeType")]
 struct MemberName(String);
 
 fn main() {

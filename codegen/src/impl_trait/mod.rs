@@ -53,7 +53,8 @@ impl Parse for Args {
             } else if input.peek(token::As) {
                 _ = input.parse::<token::As>()?;
                 _ = input.parse::<token::Eq>()?;
-                this.r#as = Some(input.parse::<syn::Path>()?);
+                let lit = input.parse::<syn::LitStr>()?;
+                this.r#as = Some(syn::parse_str(&lit.value())?);
             } else {
                 return Err(syn::Error::new(
                     input.span(),
@@ -339,7 +340,7 @@ impl Definition {
 
     /// Defines trait item.
     ///
-    /// Item differs relying on `#[delegate(as = ..)]` attribute:
+    /// Item differs relying on `#[delegate(as = "..")]` attribute:
     /// - For crate-local traits it's just a trait definition.
     /// - For external traits it's a newtype wrapper to implement the trait for.
     fn define_item(&self) -> TokenStream {

@@ -1,6 +1,6 @@
 use delegation_codegen::delegate;
 
-#[delegate(as = AsRef)]
+#[delegate(as = "AsRef")]
 pub trait AsRefDef<T: ?Sized> {
     fn as_ref(&self) -> &T;
 }

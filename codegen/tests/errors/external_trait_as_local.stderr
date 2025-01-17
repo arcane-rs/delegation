@@ -23,8 +23,8 @@ error[E0576]: cannot find method or associated constant `as_ref` in trait `AsRef
 error[E0046]: not all trait items implemented, missing: `Wrapper`, `__delegate_AsRefDef__Bind0`
  --> tests/errors/external_trait_as_local.rs:3:1
   |
-3 | #[delegate(as = AsRef)]
-  | ^^^^^^^^^^^^^^^^^^^^^^^
+3 | #[delegate(as = "AsRef")]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^
   | |
   | missing `Wrapper`, `__delegate_AsRefDef__Bind0` in implementation
   | `Wrapper` from trait

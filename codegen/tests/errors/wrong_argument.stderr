@@ -49,19 +49,19 @@ error: expected non-macro attribute, found attribute macro `delegate`
 error: expected non-macro attribute, found attribute macro `delegate`
   --> tests/errors/wrong_argument.rs:46:13
    |
-46 |     Alias(#[delegate(as = SomeType)] String),
+46 |     Alias(#[delegate(as = "SomeType")] String),
    |             ^^^^^^^^ not a non-macro attribute
 
 error: unexpected attribute argument
   --> tests/errors/wrong_argument.rs:49:12
    |
-49 | #[delegate(as = SomeType)]
+49 | #[delegate(as = "SomeType")]
    |            ^^
 
 error: unexpected attribute argument
   --> tests/errors/wrong_argument.rs:54:12
    |
-54 | #[delegate(as = SomeType)]
+54 | #[delegate(as = "SomeType")]
    |            ^^
 
 error[E0277]: the trait bound `String: AsString` is not satisfied
