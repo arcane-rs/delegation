@@ -6,7 +6,17 @@ All user visible changes to this project will be documented in this file. This p
 
 
 
-## main
+## [0.1.0] - 2025-??-?? ~TBD
+[0.1.0]: /../../tree/v0.1.0
+
+### Added
+
+- Codegen:
+    - `delegate` macro (#1).
+- Machinery:
+    - `Either` and `Void` enums (#1);
+    - `External` and `Wrapper` structs (#1);
+    - `Convert` and `TypeOf` traits (#1).
 
 
 
