@@ -8,7 +8,7 @@ delegation
 
 Provides trait delegation functionality for enums and structs.
 
-Forked from unmainained [enum_dispatch][4] crate.
+Forked from unmaintained [enum_dispatch][4] crate.
 
 ```toml
 [dependencies]
