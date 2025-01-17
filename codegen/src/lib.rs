@@ -3,6 +3,7 @@
     macro_use_extern_crate,
     nonstandard_style,
     rust_2018_idioms,
+    rustdoc::all,
     trivial_casts,
     trivial_numeric_casts
 )]
