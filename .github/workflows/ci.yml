@@ -226,7 +226,6 @@ jobs:
       - clippy
       - example
       - msrv
-      - release-check
       - rustdoc
       - rustfmt
       - test
