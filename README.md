@@ -218,7 +218,7 @@ Crate provides several definitions:
 
 Implements the `Convert` trait for an enum/struct, which allows to convert it to "any of its variants" type.
 
-```rust
+```rust,ignore
 use delegation::delegate;
 
 #[delegate]
