@@ -93,9 +93,7 @@ impl Parse for InnerArgs {
             syn::Error::new(e.span(), "unexpected attribute argument")
         })?;
         _ = input.parse::<token::Eq>()?;
-        let lit = input.parse::<syn::LitStr>()?;
-
-        this.r#as = Some(syn::parse_str(&lit.value())?);
+        this.r#as = Some(input.parse::<syn::Type>()?);
 
         Ok(this)
     }
