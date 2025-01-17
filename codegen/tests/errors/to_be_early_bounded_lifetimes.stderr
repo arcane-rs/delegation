@@ -1,0 +1,21 @@
+error: Lifetimes `'s` are limited to be early-bounded.
+
+       Consider adding `'s: 's` bound or replace them with `'_'.
+
+       See `rust-lang/rust#87803` for details.
+ --> tests/errors/to_be_early_bounded_lifetimes.rs:5:5
+  |
+5 |     fn prepend_with<'s>(&self, prefix: &'s str) -> String;
+  |     ^^
+
+error: cannot find macro `PrependWith` in this scope
+  --> tests/errors/to_be_early_bounded_lifetimes.rs:14:19
+   |
+14 | #[delegate(derive(PrependWith))]
+   |                   ^^^^^^^^^^^
+
+error[E0405]: cannot find trait `PrependWith` in this scope
+ --> tests/errors/to_be_early_bounded_lifetimes.rs:8:6
+  |
+8 | impl PrependWith for String {
+  |      ^^^^^^^^^^^ not found in this scope

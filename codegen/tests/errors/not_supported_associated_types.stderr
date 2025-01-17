@@ -1,0 +1,5 @@
+error: only trait methods with untyped receiver are allowed
+ --> tests/errors/not_supported_associated_types.rs:7:5
+  |
+7 |     type Buffer;
+  |     ^^^^
