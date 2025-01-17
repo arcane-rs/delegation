@@ -258,7 +258,7 @@ use self::macro_path::MacroPath;
 ///
 /// Because the both sides of the delegation should be marked with the
 /// `#[delegate]` attribute, it's impossible to make external type delegatable.
-/// To handle this, the macro provides the `#[delegate(as = "my::Def")]`
+/// To handle this, the macro provides the `#[delegate(as = my::Def)]`
 /// attribute argument for struct fields and enum variants. It uses the provided
 /// type as known declaration of some external type. Provided type should be
 /// crate-local, and marked with the `#[delegate]` macro, and to provide an
@@ -313,7 +313,7 @@ use self::macro_path::MacroPath;
 /// }
 ///
 /// #[delegate(derive(AsStr))]
-/// struct EitherString(#[delegate(as = "EitherDef")] Either<String, String>);
+/// struct EitherString(#[delegate(as = EitherDef)] Either<String, String>);
 ///
 /// let left = EitherString(Either::Left("left".to_string()));
 /// let right = EitherString(Either::Right("right".to_string()));
@@ -326,7 +326,7 @@ use self::macro_path::MacroPath;
 /// Because the both sides of the delegation should be marked with the
 /// `#[delegate]` attribute, it's impossible to make an external trait
 /// delegatable. To handle this, the macro provides the
-/// `#[delegate(as = "my::Def")]` attribute argument for traits. It uses the
+/// `#[delegate(as = my::Def)]` attribute argument for traits. It uses the
 /// provided trait as known declaration of some external trait. With this
 /// argument, the macro will generate a wrapper type implementing the external
 /// trait on it, with the name of the expanded "declaration" trait. By using
@@ -336,7 +336,7 @@ use self::macro_path::MacroPath;
 /// ```rust
 /// # use delegation::delegate;
 /// #
-/// #[delegate(as = "AsRef")]
+/// #[delegate(as = AsRef)]
 /// trait AsRefDef<T: ?Sized> {
 ///     fn as_ref(&self) -> &T;
 /// }
@@ -352,7 +352,7 @@ use self::macro_path::MacroPath;
 ///     }
 /// }
 ///
-/// #[delegate(as = "AsStr")]
+/// #[delegate(as = AsStr)]
 /// trait AsStrDef {
 ///     fn as_str(&self) -> &str;
 /// }

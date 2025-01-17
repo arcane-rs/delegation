@@ -99,7 +99,7 @@ assert_eq!(last.as_inner(), "John");
 
 ## External types
 
-Because the both sides of the delegation should be marked with the `#[delegate]` attribute, it's impossible to make external type delegatable. To handle this, the macro provides the `#[delegate(as = "my::Def")]` attribute argument for struct fields and enum variants. It uses the provided type as known declaration of some external type. Provided type should be crate-local, and marked with the `#[delegate]` macro, and to provide an infallible conversion from external type (including reference-to-reference one).
+Because the both sides of the delegation should be marked with the `#[delegate]` attribute, it's impossible to make external type delegatable. To handle this, the macro provides the `#[delegate(as = my::Def)]` attribute argument for struct fields and enum variants. It uses the provided type as known declaration of some external type. Provided type should be crate-local, and marked with the `#[delegate]` macro, and to provide an infallible conversion from external type (including reference-to-reference one).
 
 ```rust
 use delegation::{
@@ -152,7 +152,7 @@ impl From<Either<String, String>> for EitherDef {
 }
 
 #[delegate(derive(AsStr))]
-struct EitherString(#[delegate(as = "EitherDef")] Either<String, String>);
+struct EitherString(#[delegate(as = EitherDef)] Either<String, String>);
 
 let left = EitherString(Either::Left("left".to_string()));
 let right = EitherString(Either::Right("right".to_string()));
@@ -165,12 +165,12 @@ assert_eq!(right.as_str(), "right");
 
 ## External traits
 
-Because the both sides of the delegation should be marked with the `#[delegate]` attribute, it's impossible to make an external trait delegatable. To handle this, the macro provides the `#[delegate(as = "my::Def")]` attribute argument for traits. It uses the provided trait as known declaration of some external trait. With this argument, the macro will generate a wrapper type implementing the external trait on it, with the name of the expanded "declaration" trait. By using this wrapper type in `#[delegate(derive(ext::Trait as my::TraitDef))]` argument, you can delegate external trait to your type.
+Because the both sides of the delegation should be marked with the `#[delegate]` attribute, it's impossible to make an external trait delegatable. To handle this, the macro provides the `#[delegate(as = my::Def)]` attribute argument for traits. It uses the provided trait as known declaration of some external trait. With this argument, the macro will generate a wrapper type implementing the external trait on it, with the name of the expanded "declaration" trait. By using this wrapper type in `#[delegate(derive(ext::Trait as my::TraitDef))]` argument, you can delegate external trait to your type.
 
 ```rust
 use delegation::delegate;
 
-#[delegate(as = "AsRef")]
+#[delegate(as = AsRef)]
 trait AsRefDef<T: ?Sized> {
     fn as_ref(&self) -> &T;
 }
@@ -186,7 +186,7 @@ impl AsStr for String {
     }
 }
 
-#[delegate(as = "AsStr")]
+#[delegate(as = AsStr)]
 trait AsStrDef {
     fn as_str(&self) -> &str;
 }

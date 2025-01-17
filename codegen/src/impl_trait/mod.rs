@@ -52,8 +52,7 @@ impl Parse for Args {
             } else if input.peek(token::As) {
                 _ = input.parse::<token::As>()?;
                 _ = input.parse::<token::Eq>()?;
-                let lit = input.parse::<syn::LitStr>()?;
-                this.r#as = Some(syn::parse_str(&lit.value())?);
+                this.r#as = Some(input.parse()?);
             } else {
                 return Err(syn::Error::new(
                     input.span(),
