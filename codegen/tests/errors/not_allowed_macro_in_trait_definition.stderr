@@ -1,5 +1,0 @@
-error: only trait methods with untyped receiver are allowed
- --> tests/errors/not_allowed_macro_in_trait_definition.rs:5:5
-  |
-5 |     unreachable!();
-  |     ^^^^^^^^^^^

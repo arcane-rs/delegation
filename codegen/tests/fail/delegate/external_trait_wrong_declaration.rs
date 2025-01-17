@@ -1,6 +1,6 @@
 use delegation::delegate;
 
-#[delegate(as = "AsRef")]
+#[delegate(as = AsRef)]
 trait AsRefDef<T: ?Sized> {
     fn as_ref(&mut self) -> &mut T;
 }
@@ -16,7 +16,7 @@ impl AsStr for String {
     }
 }
 
-#[delegate(as = "AsStr")]
+#[delegate(as = AsStr)]
 trait AsStrDef {
     fn as_str(&self) -> &str;
 }

@@ -1,7 +1,0 @@
-error: cannot find macro `AsStr` in this scope
- --> tests/errors/no_trait_attr.rs:7:19
-  |
-7 | #[delegate(derive(AsStr))]
-  |                   ^^^^^
-  |
-  = note: `AsStr` is in scope, but it is a trait, not a macro
