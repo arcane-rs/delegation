@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+    tags: ["v*"]
+  pull_request:
+    branches: ["main"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  RUST_BACKTRACE: 1
+
+jobs:
+
+  ################
+  # Pull Request #
+  ################
+
+  pr:
+    if: ${{ github.event_name == 'pull_request' }}
+    needs:
+      - rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - run: true
+
+
+
+
+  ##########################
+  # Linting and formatting #
+  ##########################
+
+  rustfmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: nightly
+          components: rustfmt
+
+      - run: cargo +nightly fmt --all -- --check
