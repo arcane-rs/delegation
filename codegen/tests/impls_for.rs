@@ -55,9 +55,7 @@ fn impls_trait_for_enum() {
     assert_eq!(first_name.as_str(), "Jane");
     assert_eq!(first_name.into_string(), "Jane");
 
-    let mut last_name = Name::Last {
-        name: LastName { name: "Doe".into() },
-    };
+    let mut last_name = Name::Last { name: LastName { name: "Doe".into() } };
     *last_name.as_mut_str() = "Smith".into();
     assert_eq!(last_name.as_str(), "Smith");
     assert_eq!(last_name.into_string(), "Smith");

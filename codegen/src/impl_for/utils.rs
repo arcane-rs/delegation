@@ -66,9 +66,8 @@ impl VisitMut for GenericBinder<'_> {
     }
 
     fn visit_block_mut(&mut self, i: &mut syn::Block) {
-        let val = GenPar::try_from(&*i)
-            .ok()
-            .and_then(|ty| self.generics.get(&ty));
+        let val =
+            GenPar::try_from(&*i).ok().and_then(|ty| self.generics.get(&ty));
 
         match val {
             Some(GenArg::Type(t)) => {
@@ -82,9 +81,8 @@ impl VisitMut for GenericBinder<'_> {
     }
 
     fn visit_type_mut(&mut self, i: &mut syn::Type) {
-        if let Some(GenArg::Type(t)) = GenPar::try_from(&*i)
-            .ok()
-            .and_then(|ty| self.generics.get(&ty))
+        if let Some(GenArg::Type(t)) =
+            GenPar::try_from(&*i).ok().and_then(|ty| self.generics.get(&ty))
         {
             *i = t.clone();
         } else {
@@ -208,19 +206,15 @@ pub(super) trait ElideLifetimes {
 
 impl ElideLifetimes for syn::Type {
     fn elide_lifetimes(&mut self) {
-        ReplaceLifetimes {
-            replace_with: &parse_quote! { '_ },
-        }
-        .visit_type_mut(self);
+        ReplaceLifetimes { replace_with: &parse_quote! { '_ } }
+            .visit_type_mut(self);
     }
 }
 
 impl ElideLifetimes for syn::Path {
     fn elide_lifetimes(&mut self) {
-        ReplaceLifetimes {
-            replace_with: &parse_quote! { '_ },
-        }
-        .visit_path_mut(self);
+        ReplaceLifetimes { replace_with: &parse_quote! { '_ } }
+            .visit_path_mut(self);
     }
 }
 

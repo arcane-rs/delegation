@@ -74,11 +74,7 @@ fn derives_with_generics() {
     let oleg = Users::Oleg(UserOleg("Oleg".to_string()));
     assert_eq!(oleg.name(), "Oleg");
 
-    let boris = Users::Boris {
-        user: UserBoris {
-            name: "Boris".to_string(),
-        },
-    };
+    let boris = Users::Boris { user: UserBoris { name: "Boris".to_string() } };
     assert_eq!(boris.name(), "Boris");
 }
 
@@ -88,11 +84,7 @@ fn derives_with_const_generics() {
     assert_eq!(<Users as Versioned<2>>::version(&oleg), "UserOleg v2");
     assert_eq!(oleg.version_num(), Ver::<2>);
 
-    let boris = Users::Boris {
-        user: UserBoris {
-            name: "Boris".to_string(),
-        },
-    };
+    let boris = Users::Boris { user: UserBoris { name: "Boris".to_string() } };
     assert_eq!(<Users as Versioned<2>>::version(&boris), "UserBoris v2");
     assert_eq!(boris.version_num(), Ver::<2>);
 }

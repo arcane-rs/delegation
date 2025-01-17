@@ -202,9 +202,7 @@ impl Definition {
             };
 
             let syn::Expr::Path(syn::ExprPath {
-                qself: Some(qself),
-                path,
-                ..
+                qself: Some(qself), path, ..
             }) = func.as_mut()
             else {
                 return;

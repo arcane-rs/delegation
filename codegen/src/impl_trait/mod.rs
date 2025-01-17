@@ -35,10 +35,7 @@ struct Args {
 
 impl Parse for Args {
     fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
-        let mut this = Self {
-            r#for: Punctuated::new(),
-            r#as: None,
-        };
+        let mut this = Self { r#for: Punctuated::new(), r#as: None };
 
         if input.is_empty() {
             return Ok(this);
@@ -53,8 +50,7 @@ impl Parse for Args {
             } else if input.peek(token::As) {
                 _ = input.parse::<token::As>()?;
                 _ = input.parse::<token::Eq>()?;
-                let lit = input.parse::<syn::LitStr>()?;
-                this.r#as = Some(syn::parse_str(&lit.value())?);
+                this.r#as = Some(input.parse()?);
             } else {
                 return Err(syn::Error::new(
                     input.span(),
@@ -228,11 +224,7 @@ impl Definition {
                         colon_token: None,
                         ..
                     }) => methods_owned.push(m.clone()),
-                    Some(syn::Receiver {
-                        colon_token: Some(_),
-                        ..
-                    })
-                    | None => {
+                    Some(syn::Receiver { colon_token: Some(_), .. }) | None => {
                         return Err(syn::Error::new(
                             m.span(),
                             "all trait method must have an untyped receiver",
@@ -340,7 +332,7 @@ impl Definition {
 
     /// Defines trait item.
     ///
-    /// Item differs relying on `#[delegate(as = "..")]` attribute:
+    /// Item differs relying on `#[delegate(as = ..)]` attribute:
     /// - For crate-local traits it's just a trait definition.
     /// - For external traits it's a newtype wrapper to implement the trait for.
     fn define_item(&self) -> TokenStream {
@@ -1135,9 +1127,7 @@ impl Definition {
         }
         .cloned()
         .map(|mut method| {
-            method
-                .sig
-                .lift_receiver_lifetime(parse_quote! { '__delegate });
+            method.sig.lift_receiver_lifetime(parse_quote! { '__delegate });
             method.sig
         })
     }
@@ -1302,9 +1292,8 @@ impl Parse for ForTy {
             .transpose()?;
         let ty = input.parse()?;
         if let Some(where_clause) = input.parse::<Option<syn::WhereClause>>()? {
-            generics
-                .get_or_insert_with(syn::Generics::default)
-                .where_clause = Some(where_clause);
+            generics.get_or_insert_with(syn::Generics::default).where_clause =
+                Some(where_clause);
         }
 
         Ok(Self { ty, generics })

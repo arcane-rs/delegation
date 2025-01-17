@@ -1,10 +1,8 @@
 error[E0277]: the trait bound `EitherDef: From<Either<String, String>>` is not satisfied
-  --> tests/errors/external_type_without_conversion.rs:20:1
+  --> tests/errors/external_type_without_conversion.rs:21:37
    |
-20 | #[delegate(derive(AsStr))]
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `From<Either<String, String>>` is not implemented for `EitherDef`
-   |
-   = note: this error originates in the attribute macro `delegate` (in Nightly builds, run with -Z macro-backtrace for more info)
+21 | struct EitherString(#[delegate(as = EitherDef)] Either<String, String>);
+   |                                     ^^^^^^^^^ the trait `From<Either<String, String>>` is not implemented for `EitherDef`
 
 error[E0277]: the trait bound `&EitherDef: From<&Either<String, String>>` is not satisfied
   --> tests/errors/external_type_without_conversion.rs:20:1

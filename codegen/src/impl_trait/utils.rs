@@ -310,19 +310,14 @@ impl SignatureExt for syn::Signature {
                     parse_quote! { #self_lt: #replace_lt },
                     parse_quote! { #replace_lt: #self_lt },
                 ];
-                self.generics
-                    .make_where_clause()
-                    .predicates
-                    .extend(predicates);
+                self.generics.make_where_clause().predicates.extend(predicates);
             }
         }
 
         // 6. Insert `replace_with` after every reference without a lifetime in
         //    signature's output.
-        InsertLifetime {
-            inserted: replacer.replace_with,
-        }
-        .visit_return_type_mut(&mut self.output);
+        InsertLifetime { inserted: replacer.replace_with }
+            .visit_return_type_mut(&mut self.output);
     }
 
     #[expect(clippy::renamed_function_params, reason = "more readable")]
@@ -361,16 +356,11 @@ impl SignatureExt for syn::Signature {
 
         // 4. Insert `replace_with` after every reference without a lifetime in
         //    signature's output.
-        InsertLifetime {
-            inserted: replacer.replace_with,
-        }
-        .visit_return_type_mut(&mut self.output);
+        InsertLifetime { inserted: replacer.replace_with }
+            .visit_return_type_mut(&mut self.output);
 
         // 5. Expand every elided lifetime in whole signature.
-        let mut expander = ExpandLifetime {
-            expand_fn,
-            expanded: vec![],
-        };
+        let mut expander = ExpandLifetime { expand_fn, expanded: vec![] };
 
         if return_lt.ident != "_" {
             expander.visit_return_type_mut(&mut self.output);
@@ -447,9 +437,7 @@ impl SignatureExt for syn::Signature {
             }
         }
 
-        let mut collector = CollectLifetimes {
-            lifetimes: HashSet::new(),
-        };
+        let mut collector = CollectLifetimes { lifetimes: HashSet::new() };
 
         // 1. Collect all lifetimes occurring in the arguments.
         for arg in &self.inputs {
@@ -484,9 +472,7 @@ impl SignatureExt for syn::Signature {
                 })
                 .cloned()
                 .collect::<HashSet<_>>();
-        collector
-            .lifetimes
-            .retain(|lt| method_lifetimes.contains(lt));
+        collector.lifetimes.retain(|lt| method_lifetimes.contains(lt));
 
         // 4. Remove lifetimes that are early bounded.
         RemoveEarlyBoundedLifetimes(&mut collector.lifetimes)

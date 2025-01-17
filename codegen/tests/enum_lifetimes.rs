@@ -88,9 +88,7 @@ enum CowUser<'a> {
 
 #[test]
 fn newtype_derives_trait() {
-    let user = User {
-        name: "John".into(),
-    };
+    let user = User { name: "John".into() };
     let user = CowUser::Borrowed(&user);
     assert_eq!(user.reborrowed_name(), "John");
     assert_eq!(user.passed_name(), "John");

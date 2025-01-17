@@ -29,10 +29,6 @@ fn main() {
     let john = Name::First(FirstName("John".into()));
     assert_eq!(john.as_str(), "John");
 
-    let smith = Name::Last {
-        name: LastName {
-            name: "Smith".into(),
-        },
-    };
+    let smith = Name::Last { name: LastName { name: "Smith".into() } };
     assert_eq!(smith.as_str(), "Smith");
 }

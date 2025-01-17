@@ -30,12 +30,12 @@ mod sealed {
 
     use super::AsStr;
 
-    #[delegate(as = "AsRef")]
+    #[delegate(as = AsRef)]
     pub trait AsRefDef<T: ?Sized> {
         fn as_ref(&self) -> &T;
     }
 
-    #[delegate(as = "AsStr")]
+    #[delegate(as = AsStr)]
     pub trait AsStrDef {
         fn as_str(&self) -> &str;
 

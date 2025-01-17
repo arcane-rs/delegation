@@ -23,9 +23,7 @@ struct Args {
 
 impl Parse for Args {
     fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
-        let mut this = Self {
-            derive: Punctuated::new(),
-        };
+        let mut this = Self { derive: Punctuated::new() };
 
         if input.is_empty() {
             return Ok(this);
@@ -93,9 +91,7 @@ impl Parse for InnerArgs {
             syn::Error::new(e.span(), "unexpected attribute argument")
         })?;
         _ = input.parse::<token::Eq>()?;
-        let lit = input.parse::<syn::LitStr>()?;
-
-        this.r#as = Some(syn::parse_str(&lit.value())?);
+        this.r#as = Some(input.parse()?);
 
         Ok(this)
     }
@@ -190,11 +186,11 @@ impl Definition {
             self.generate_either(self.delegated.types(), Some(&lifetime), true);
 
         let mut either_where_clause: syn::WhereClause = parse_quote! { where };
-        either_where_clause
-            .predicates
-            .extend(self.delegated.types().map(|ty| -> syn::WherePredicate {
+        either_where_clause.predicates.extend(self.delegated.types().map(
+            |ty| -> syn::WherePredicate {
                 parse_quote! { #ty: #lifetime }
-            }));
+            },
+        ));
 
         let (convert_owned, convert_ref, convert_ref_mut) = match &self
             .delegated
@@ -536,10 +532,7 @@ impl TryFrom<&mut syn::Fields> for Field {
                 wrapper_ty,
             },
             None => Self::Unnamed {
-                index: syn::Index {
-                    index: 0,
-                    span: field.span(),
-                },
+                index: syn::Index { index: 0, span: field.span() },
                 ty: Box::new(field.ty.clone()),
                 wrapper_ty,
             },
@@ -680,11 +673,7 @@ impl Parse for DeriveTrait {
                 Some(where_clause);
         }
 
-        Ok(Self {
-            path,
-            wrapper_ty,
-            generics,
-        })
+        Ok(Self { path, wrapper_ty, generics })
     }
 }
 

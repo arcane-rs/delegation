@@ -63,9 +63,7 @@ fn enum_derives_trait() {
     assert_eq!(first_name.as_mut_str(), "John");
     assert_eq!(first_name.into_string(), "John");
 
-    let mut last_name = Name::Last {
-        name: LastName { name: () },
-    };
+    let mut last_name = Name::Last { name: LastName { name: () } };
     assert_eq!(last_name.as_str(), "default impl");
     assert_eq!(last_name.as_mut_str(), "default impl");
     assert_eq!(last_name.into_string(), "default impl");
