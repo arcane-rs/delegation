@@ -158,6 +158,7 @@ pub mod private; // Not part of the public API.
 #[doc(hidden)]
 mod used_only_in_benches {
     use criterion as _;
+    use regex as _;
 }
 
 #[doc(inline)]

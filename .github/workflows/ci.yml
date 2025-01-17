@@ -24,6 +24,7 @@ jobs:
     if: ${{ github.event_name == 'pull_request' }}
     needs:
       - clippy
+      - msrv
       - rustdoc
       - rustfmt
       - test
@@ -66,6 +67,28 @@ jobs:
   ###########
   # Testing #
   ###########
+
+  msrv:
+    name: MSRV
+    strategy:
+      fail-fast: false
+      matrix:
+        msrv: ["1.81.0"]
+        os: ["ubuntu", "macOS", "windows"]
+    runs-on: ${{ matrix.os }}-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: nightly
+      - uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: ${{ matrix.msrv }}
+
+      - run: cargo +nightly update -Z minimal-versions
+
+      - run: make test.cargo crate=delegation-codegen
+      - run: make test.cargo crate=delegation
 
   test:
     strategy:
