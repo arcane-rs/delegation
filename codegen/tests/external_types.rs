@@ -1,4 +1,4 @@
-use delegation::{__macros::Either, delegate};
+use delegation::{delegate, private::Either};
 
 #[delegate]
 trait AsStr {
@@ -64,7 +64,7 @@ impl From<Either<String, String>> for EitherDef {
 }
 
 #[delegate(derive(AsStr))]
-struct EitherString(#[delegate(as = EitherDef)] Either<String, String>);
+struct EitherString(#[delegate(as = "EitherDef")] Either<String, String>);
 
 #[test]
 fn derives_on_external_type() {

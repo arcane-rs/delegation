@@ -23,7 +23,10 @@ jobs:
   pr:
     if: ${{ github.event_name == 'pull_request' }}
     needs:
+      - clippy
+      - rustdoc
       - rustfmt
+      - test
     runs-on: ubuntu-latest
     steps:
       - run: true
@@ -35,6 +38,17 @@ jobs:
   # Linting and formatting #
   ##########################
 
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: stable
+          components: clippy
+
+      - run: make cargo.lint
+
   rustfmt:
     runs-on: ubuntu-latest
     steps:
@@ -44,4 +58,60 @@ jobs:
           toolchain: nightly
           components: rustfmt
 
-      - run: cargo +nightly fmt --all -- --check
+      - run: make cargo.fmt check=yes
+
+
+
+
+  ###########
+  # Testing #
+  ###########
+
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain: ["stable", "beta", "nightly"]
+        os: ["ubuntu", "macOS", "windows"]
+    runs-on: ${{ matrix.os }}-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          components: rust-src
+
+      - run: cargo install cargo-careful
+        if: ${{ matrix.toolchain == 'nightly' }}
+
+      - run: make test.cargo crate=delegation-codegen
+                  careful=${{ (matrix.toolchain == 'nightly' && 'yes')
+                           ||                                   'no' }}
+      - run: make test.cargo crate=delegation
+                  careful=${{ (matrix.toolchain == 'nightly' && 'yes')
+                           ||                                   'no' }}
+
+
+
+
+  #################
+  # Documentation #
+  #################
+
+  rustdoc:
+    strategy:
+      matrix:
+        crate:
+          - delegation-codegen
+          - delegation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: stable
+
+      - run: make cargo.doc crate=${{ matrix.crate }}
+                            private=yes open=no
+        env:
+          RUSTFLAGS: -D warnings

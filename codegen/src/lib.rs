@@ -1,9 +1,9 @@
-//! Code generation of `#[delegate]` macro.
-
+#![doc = include_str!("../README.md")]
 #![deny(
     macro_use_extern_crate,
     nonstandard_style,
     rust_2018_idioms,
+    rustdoc::all,
     trivial_casts,
     trivial_numeric_casts
 )]
@@ -156,17 +156,22 @@ mod impl_for;
 mod impl_trait;
 mod macro_path;
 
+#[cfg(test)]
+#[doc(hidden)]
+mod used_only_in_integrations_tests {
+    use delegation as _;
+    use trybuild as _;
+}
+
 use proc_macro2::TokenStream;
 use quote::ToTokens as _;
 use syn::spanned::Spanned as _;
-#[cfg(test)]
-use {delegation as _, trybuild as _}; // Used in integration tests.
 
-pub(crate) use macro_path::MacroPath;
+use self::macro_path::MacroPath;
 
 /// Derives trait on a new-type struct or enum, invoking it on its inner type.
 ///
-/// # Examples
+/// # Example
 ///
 /// ```rust
 /// # use delegation::delegate;
@@ -201,27 +206,23 @@ pub(crate) use macro_path::MacroPath;
 ///         self
 ///     }
 /// }
-/// #
-/// # fn main() {
+///
 /// let mut name = Name::First(FirstName("John".into()));
 /// assert_eq!(name.as_str(), "John");
 ///
 /// name.as_mut_str().push_str("ny");
 /// assert_eq!(name.as_str(), "Johnny");
 /// assert_eq!(name.into_string(), "Johnny");
-/// # }
 /// ```
 ///
 /// # Generics
 ///
-/// In some cases, trait or a type requires additional generic parameters to
+/// In some cases, a trait or a type requires additional generic parameters to
 /// implement delegation. For this case, macro provides `for<..>` and `where`
 /// syntax for `#[delegate(derive(..))]` and `#[delegate(for(..))]` attribute
-/// arguments. Specified generics will replace existing, provided by
-/// a trait/type definition. To remove generics when all types are known use
+/// arguments. Specified generics will replace existing, provided by the
+/// trait/type definition. To remove generics when all types are known use
 /// `for<>`.
-///
-/// ## Example
 ///
 /// ```rust
 /// # use delegation::delegate;
@@ -246,29 +247,26 @@ pub(crate) use macro_path::MacroPath;
 ///         I: AsInner<str> + 'static;
 /// ))]
 /// struct NickName<I>(I);
-/// #
-/// # fn main() {
+///
 /// let first = FirstName("John".into());
 /// assert_eq!(first.as_inner(), "John");
 /// let last = NickName::<FirstName>(first);
 /// assert_eq!(last.as_inner(), "John");
-/// # }
 /// ```
 ///
 /// # External types
 ///
-/// Because of both sides of the delegation should be marked with `#[delegate]`,
-/// it's impossible to make external type delegatable. For handle this,
-/// the macro provides `#[delegate(as = my::Def)]` attribute argument for
-/// struct fields and enum variants. It uses provided type as known declaration
-/// of some external type. Provided type should be crate-local, marked with
-/// `#[delegate]` and provides infallible conversion from external type
-/// (including reference-to-reference).
-///
-/// ## Example
+/// Because the both sides of the delegation should be marked with the
+/// `#[delegate]` attribute, it's impossible to make external type delegatable.
+/// To handle this, the macro provides the `#[delegate(as = "my::Def")]`
+/// attribute argument for struct fields and enum variants. It uses the provided
+/// type as known declaration of some external type. Provided type should be
+/// crate-local, and marked with the `#[delegate]` macro, and to provide an
+/// infallible conversion from external type (including reference-to-reference
+/// one).
 ///
 /// ```rust
-/// # use delegation::{__macros::Either, delegate};
+/// # use delegation::{private::Either, delegate};
 /// #
 /// #[delegate]
 /// trait AsStr {
@@ -315,33 +313,30 @@ pub(crate) use macro_path::MacroPath;
 /// }
 ///
 /// #[delegate(derive(AsStr))]
-/// struct EitherString(#[delegate(as = EitherDef)] Either<String, String>);
-/// #
-/// # fn main() {
+/// struct EitherString(#[delegate(as = "EitherDef")] Either<String, String>);
+///
 /// let left = EitherString(Either::Left("left".to_string()));
 /// let right = EitherString(Either::Right("right".to_string()));
 /// assert_eq!(left.as_str(), "left");
 /// assert_eq!(right.as_str(), "right");
-/// # }
 /// ```
 ///
 /// # External traits
 ///
-/// Because of both sides of the delegation should be marked with `#[delegate]`,
-/// it's impossible to make external trait delegatable. For handle this,
-/// the macro provides `#[delegate(as = my::Def)]` attribute argument for
-/// traits. It uses provided trait as known declaration of some external trait.
-/// With this argument, macro will generate wrapper type that implements
-/// external trait on it, with the name of expanded "declaration" trait. By
-/// using this wrapper type in `#[delegate(derive(ext::Trait as my::TraitDef))]`
+/// Because the both sides of the delegation should be marked with the
+/// `#[delegate]` attribute, it's impossible to make an external trait
+/// delegatable. To handle this, the macro provides the
+/// `#[delegate(as = "my::Def")]` attribute argument for traits. It uses the
+/// provided trait as known declaration of some external trait. With this
+/// argument, the macro will generate a wrapper type implementing the external
+/// trait on it, with the name of the expanded "declaration" trait. By using
+/// this wrapper type in `#[delegate(derive(ext::Trait as my::TraitDef))]`
 /// argument, you can delegate external trait to your type.
-///
-/// ## Example
 ///
 /// ```rust
 /// # use delegation::delegate;
 /// #
-/// #[delegate(as = AsRef)]
+/// #[delegate(as = "AsRef")]
 /// trait AsRefDef<T: ?Sized> {
 ///     fn as_ref(&self) -> &T;
 /// }
@@ -357,7 +352,7 @@ pub(crate) use macro_path::MacroPath;
 ///     }
 /// }
 ///
-/// #[delegate(as = AsStr)]
+/// #[delegate(as = "AsStr")]
 /// trait AsStrDef {
 ///     fn as_str(&self) -> &str;
 /// }
@@ -369,12 +364,10 @@ pub(crate) use macro_path::MacroPath;
 /// enum Name {
 ///     First(String),
 /// }
-/// #
-/// # fn main() {
+///
 /// let name = Name::First("John".to_string());
 /// assert_eq!(name.as_ref(), "John");
 /// assert_eq!(name.as_str(), "John");
-/// # }
 /// ```
 ///
 /// # Limitations
@@ -387,7 +380,7 @@ pub(crate) use macro_path::MacroPath;
 ///   [`Sized`], [`Send`] or [`Sync`] are not supported yet.
 /// - Associated types/constants are not supported yet.
 /// - Lifetimes in methods are limited to be early-bounded in some cases
-///   (See [rust-lang/rust#87803]).
+///   (see [rust-lang/rust#87803]).
 /// - `Self` type is limited to be used in methods return types.
 ///
 /// [rust-lang/rust#87803]: https://github.com/rust-lang/rust/issues/87803
@@ -396,16 +389,18 @@ pub fn delegate(
     attr_args: proc_macro::TokenStream,
     body: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
-    expand(attr_args.into(), &body.into())
+    expand(attr_args.into(), body.into())
         .unwrap_or_else(|e| e.to_compile_error())
         .into()
 }
 
-/// Implements delegated trait for provided type.
+/// Implements a delegated trait for the provided type.
 ///
-/// Actually, this macro is called by `macro_rules!` expanded by
-/// [`macro@delegate`] macro and only filling implementation template generated
-/// by it.
+/// Actually, this macro is called by `macro_rules!` in the expansion of the
+/// [`delegate`] macro, and only fills an implementation template generated by
+/// it.
+///
+/// [`delegate`]: macro@delegate
 // TODO: Replace this with flat declarative macro, generated by `#[delegate]`,
 //       once `macro_rules!` can handle generics easily.
 #[proc_macro]
@@ -419,12 +414,9 @@ pub fn impl_for(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 }
 
 /// Expands `#[delegate]` macro on the provided `input`.
-fn expand(args: TokenStream, input: &TokenStream) -> syn::Result<TokenStream> {
-    #[expect(
-        clippy::wildcard_enum_match_arm,
-        reason = "too much variants to handle"
-    )]
-    let tokens = match syn::parse2::<syn::Item>(input.clone())? {
+fn expand(args: TokenStream, input: TokenStream) -> syn::Result<TokenStream> {
+    let item = syn::parse2::<syn::Item>(input)?;
+    let tokens = match item {
         syn::Item::Enum(item) => {
             derive::Definition::parse_enum(item, args)?.into_token_stream()
         }
@@ -434,10 +426,28 @@ fn expand(args: TokenStream, input: &TokenStream) -> syn::Result<TokenStream> {
         syn::Item::Trait(item) => {
             impl_trait::Definition::parse(item, args)?.into_token_stream()
         }
-        item => {
+        syn::Item::Const(_)
+        | syn::Item::ExternCrate(_)
+        | syn::Item::Fn(_)
+        | syn::Item::ForeignMod(_)
+        | syn::Item::Impl(_)
+        | syn::Item::Macro(_)
+        | syn::Item::Mod(_)
+        | syn::Item::Static(_)
+        | syn::Item::TraitAlias(_)
+        | syn::Item::Type(_)
+        | syn::Item::Union(_)
+        | syn::Item::Use(_)
+        | syn::Item::Verbatim(_) => {
             return Err(syn::Error::new(
                 item.span(),
                 "allowed only on enums, structs and traits",
+            ))
+        }
+        item => {
+            return Err(syn::Error::new(
+                item.span(),
+                "unknown `syn::Item`: {item:?}",
             ))
         }
     };

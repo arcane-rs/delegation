@@ -1,6 +1,6 @@
 //! Code generation of `impl_for!` macro.
 
-mod utils;
+mod util;
 
 use std::mem;
 
@@ -11,31 +11,38 @@ use syn::{
     parse_quote, token,
     visit_mut::VisitMut as _,
 };
+#[cfg(doc)]
+use syn::{Generics, Type};
 
 use crate::MacroPath;
 
-use self::utils::{ElideLifetimes as _, GenericBinder, GenericsExt as _};
+use self::util::{ElideLifetimes as _, GenericBinder, GenericsExt as _};
 
-/// Definitions of `impl_for!` macro expansion.
+/// Definition of `impl_for!` macro expansion.
 #[derive(Debug)]
 pub(super) struct Definition {
     /// Template to fill real values into.
     template: syn::ItemImpl,
 
-    /// [`Generics`] to override the `template` with.
+    /// [`Generics`] to override the [`template`] with.
     ///
-    /// [`Generics`]: syn::Generics
+    /// [`template`]: Definition::template
     generics: Option<syn::Generics>,
 
-    /// Trait to override the `template` with.
+    /// Trait to override the [`template`] with.
+    ///
+    /// [`template`]: Definition::template
     trait_path: syn::Path,
 
-    /// [`Type`] to override the `template` with.
+    /// [`Type`] to override the [`template`] with.
     ///
-    /// [`Type`]: syn::Type
+    /// [`template`]: Definition::template
     self_ty: syn::Type,
 
-    /// Wrapper around the `self_ty` to override the `template` with.
+    /// Wrapper around the [`self_ty`] to override the [`template`] with.
+    ///
+    /// [`self_ty`]: Definition::self_ty
+    /// [`template`]: Definition::template
     wrapper_ty: syn::Path,
 
     /// [`Path`] to the macro definitions.
@@ -94,15 +101,13 @@ impl ToTokens for Definition {
 }
 
 impl Definition {
-    /// Returns whether the target trait is crate-local.
+    /// Indicates whether the target trait is crate-local.
     fn is_local_trait(&self) -> bool {
         let macro_path = &self.macro_path;
         self.wrapper_ty == parse_quote! { #macro_path ::Wrapper }
     }
 
     /// Replaces template's `Self` [`Type`] with the specified one.
-    ///
-    /// [`Type`]: syn::Type
     fn specify_type(&mut self) {
         self.template.self_ty = self.self_ty.clone().into();
     }
@@ -248,10 +253,8 @@ impl Definition {
         }
     }
 
-    /// Overrides template's [`Generics`] with the specified ones.
-    /// If new [`Generics`] are provided.
-    ///
-    /// [`Generics`]: syn::Generics
+    /// Overrides template's [`Generics`] with the specified ones, if new
+    /// [`Generics`] are provided.
     fn specify_generics(&mut self) {
         if let Some(gens) = &self.generics {
             self.template.generics = gens.clone();

@@ -2,30 +2,30 @@
 name = "delegation-codegen"
 version = "0.0.0"
 edition = "2021"
-rust-version = "1.83"
-authors = [
-    "Kai Ren <tyranron@gmail.com>",
-    "Mikhail Bashilov <m.bashilov.srg@gmail.com>",
-]
+description = "Code generation for `delegation` crate."
 license = "MIT OR Apache-2.0"
-description = "Code generation for `delegation` crate"
-documentation = "https://docs.rs/delegation"
+authors = [
+    "Mikhail Bashilov <m.bashilov.srg@gmail.com>",
+    "Kai Ren <tyranron@gmail.com>",
+]
+documentation = "https://docs.rs/delegation-codegen"
 homepage = "https://github.com/arcane-rs/delegation"
 repository = "https://github.com/arcane-rs/delegation"
 readme = "README.md"
-keywords = ["performance", "traits", "enum", "optimization", "macro"]
 categories = ["rust-patterns"]
+keywords = ["codegen", "delegation", "macro"]
+include = ["/src/", "/CHANGELOG.md", "/LICENSE-APACHE", "/LICENSE-MIT", "/README.md"]
 
 [lib]
 proc-macro = true
 
 [dependencies]
-itertools = { version = "0.14", default-features = false }
-proc-macro2 = { version = "1.0", default-features = false, features = ["span-locations"] }
-proc-macro-crate = { version = "3.2", default-features = false }
-quote = { version = "1.0", default-features = false }
-syn = { version = "2.0", default-features = false, features = ["clone-impls", "extra-traits", "full", "parsing", "printing", "proc-macro", "visit", "visit-mut"] }
+itertools = "0.14"
+proc-macro-crate = "3.2"
+proc-macro2 = { version = "1.0.28", features = ["span-locations"] }
+quote = "1.0.9"
+syn = { version = "2.0", features = ["clone-impls", "extra-traits", "full", "parsing", "printing", "proc-macro", "visit", "visit-mut"], default-features = false }
 
 [dev-dependencies]
 delegation = { path = ".." }
-trybuild = { version = "1.0", default-features = false }
+trybuild = "1.0.56"

@@ -1,6 +1,6 @@
 //! `#[delegate]` macro expansion on traits.
 
-mod utils;
+mod util;
 
 use std::{
     collections::hash_map::DefaultHasher,
@@ -18,12 +18,14 @@ use syn::{
     spanned::Spanned as _,
     token,
 };
+#[cfg(doc)]
+use syn::{Generics, Path, Signature, Type, Visibility};
 
 use crate::MacroPath;
 
-use self::utils::{GenericsExt as _, SignatureExt as _};
+use self::util::{GenericsExt as _, SignatureExt as _};
 
-/// Arguments for `#[delegate]` macro expansion on traits.
+/// Arguments of `#[delegate]` macro expansion on traits.
 struct Args {
     /// `for` attribute argument, specifying types for deriving.
     r#for: Punctuated<ForTy, token::Semi>,
@@ -50,7 +52,8 @@ impl Parse for Args {
             } else if input.peek(token::As) {
                 _ = input.parse::<token::As>()?;
                 _ = input.parse::<token::Eq>()?;
-                this.r#as = Some(input.parse()?);
+                let lit = input.parse::<syn::LitStr>()?;
+                this.r#as = Some(syn::parse_str(&lit.value())?);
             } else {
                 return Err(syn::Error::new(
                     input.span(),
@@ -73,8 +76,6 @@ impl Parse for Args {
 #[derive(Debug)]
 pub(super) struct Definition {
     /// [`Visibility`] of the trait.
-    ///
-    /// [`Visibility`]: syn::Visibility
     vis: syn::Visibility,
 
     /// Indicator whether the trait is unsafe.
@@ -86,8 +87,6 @@ pub(super) struct Definition {
     ident: syn::Ident,
 
     /// [`Generics`] of the trait.
-    ///
-    /// [`Generics`]: syn::Generics
     generics: syn::Generics,
 
     /// Methods with `self` receiver.
@@ -138,7 +137,7 @@ pub(super) struct Definition {
     /// Wrapper type to implement blanket impl of the trait on.
     wrapper_ty: syn::Path,
 
-    /// Item of this [`Definition`].
+    /// [`Item`] of this [`Definition`].
     item: Item,
 
     /// Path to the macro definitions.
@@ -177,7 +176,7 @@ impl ToTokens for Definition {
 }
 
 impl Definition {
-    /// Parses [`Definition`] from a [`syn::ItemTrait`].
+    /// Parses [`Definition`] from the provided [`syn::ItemTrait`].
     #[expect(clippy::too_many_lines, reason = "TODO: Refactor")]
     pub(super) fn parse(
         mut item: syn::ItemTrait,
@@ -201,10 +200,6 @@ impl Definition {
         let mut methods_ref_mut = Vec::new();
 
         for i in &item.items {
-            #[expect(
-                clippy::wildcard_enum_match_arm,
-                reason = "non exhaustive"
-            )]
             match i {
                 syn::TraitItem::Fn(m) => match m.sig.receiver() {
                     Some(syn::Receiver {
@@ -231,18 +226,15 @@ impl Definition {
                         ));
                     }
                 },
-                i @ (syn::TraitItem::Type(_)
+                syn::TraitItem::Type(_)
                 | syn::TraitItem::Const(_)
                 | syn::TraitItem::Macro(_)
-                | syn::TraitItem::Verbatim(_)) => {
+                | syn::TraitItem::Verbatim(_) => {
                     return Err(syn::Error::new(
                         i.span(),
                         "only trait methods with untyped receiver are allowed",
                     ))
                 }
-                // TODO: Use `non_exhaustive_omitted_patterns`, once stabilized.
-                //       https://github.com/rust-lang/rust/issues/89554
-                // #[cfg_attr(test, deny(non_exhaustive_omitted_patterns))]
                 i => {
                     return Err(syn::Error::new(
                         i.span(),
@@ -262,10 +254,8 @@ impl Definition {
                 return Err(syn::Error::new(
                     m.span(),
                     format!(
-                        "Lifetimes {} are limited to be early-bounded.\n\
-                         \n\
-                         Consider adding `{}` bound or replace them with `'_'.\
-                         \n\n\
+                        "lifetime {} are limited to be early-bounded. \
+                         Consider adding `{}` bound or replace them with `'_'. \
                          See `rust-lang/rust#87803` for details.",
                         to_be_early_bounded.iter().format_with(", ", |l, f| {
                             f(&format_args!("`{l}`"))
@@ -293,11 +283,10 @@ impl Definition {
         let ref_mut_trait_ident =
             format_ident!("__delegate_{}__DelegateRefMut", item.ident);
         let impl_macro_ident = format_ident!(
-            "__delegate_{}{}{}{}",
+            "__delegate_{}{item_hash}{}{}",
             item.ident,
-            item_hash,
             item.ident.span().start().line,
-            item.ident.span().start().column
+            item.ident.span().start().column,
         );
         let wrapper_ty = args
             .r#as
@@ -330,9 +319,9 @@ impl Definition {
         })
     }
 
-    /// Defines trait item.
+    /// Defines a trait [`Item`].
     ///
-    /// Item differs relying on `#[delegate(as = ..)]` attribute:
+    /// [`Item`] differs relying on the `#[delegate(as = ..)]` attribute:
     /// - For crate-local traits it's just a trait definition.
     /// - For external traits it's a newtype wrapper to implement the trait for.
     fn define_item(&self) -> TokenStream {
@@ -382,8 +371,9 @@ impl Definition {
                 let (impl_gens, _, where_clause) = gens.split_for_impl();
 
                 quote! {
+                    #[automatically_derived]
+                    #[allow(non_camel_case_types, reason = "macro expansion")]
                     #[doc(hidden)]
-                    #[expect(non_camel_case_types, reason = "macro expansion")]
                     type #bind_ident #impl_gens #where_clause;
                 }
             },
@@ -395,8 +385,8 @@ impl Definition {
 
                 quote! {
                     #[automatically_derived]
+                    #[allow(non_camel_case_types, reason = "macro expansion")]
                     #[doc(hidden)]
-                    #[expect(non_camel_case_types, reason = "macro expansion")]
                     #vis trait #scope_ident {
                         #( #assoc_ty )*
                     }
@@ -426,8 +416,8 @@ impl Definition {
         }
     }
 
-    /// Generates a blanket implementation for the supertrait generated by
-    /// [`Self::generate_scope()`].
+    /// Generates a blanket implementation for the supertrait generated by the
+    /// [`Self::generate_scope()`] method.
     fn blanket_impl_for_scope(&self) -> TokenStream {
         let assoc_ty = self.methods_types().enumerate().map(
             |(seq_num, (method_gens, _))| {
@@ -449,8 +439,9 @@ impl Definition {
                 let (_, ty_gens, _) = gens_ty.split_for_impl();
 
                 quote! {
+                    #[automatically_derived]
+                    #[allow(non_camel_case_types, reason = "macro expansion")]
                     #[doc(hidden)]
-                    #[expect(non_camel_case_types, reason = "macro expansion")]
                     type #bind_ident #impl_gens = #bind_ident #ty_gens
                     #where_clause;
                 }
@@ -499,8 +490,6 @@ impl Definition {
 
     /// Generates bind types containing all the [`Generics`] required for
     /// resolution of the types from trait scope.
-    ///
-    /// [`Generics`]: syn::Generics
     fn generate_binds(&self) -> TokenStream {
         let vis = &self.vis;
 
@@ -523,8 +512,8 @@ impl Definition {
 
                 quote! {
                     #[automatically_derived]
+                    #[allow(non_camel_case_types, reason = "macro expansion")]
                     #[doc(hidden)]
-                    #[expect(non_camel_case_types, reason = "macro expansion")]
                     #vis struct #bind_ident #impl_gens (#phantom_data)
                     #where_clause;
                 }
@@ -534,9 +523,10 @@ impl Definition {
         quote! { #( #bind_ty )* }
     }
 
-    /// Assigns real types from the trait scope to associated bind types. Such
-    /// assignments allow to resolve the types from the trait scope
-    /// when expanding nested `macro_rules!` macro expansion.
+    /// Assigns real types from the trait scope to associated bind types.
+    ///
+    /// Such assignments allow to resolve the types from the trait scope when
+    /// expanding nested `macro_rules!` macro expansion.
     fn assign_types_to_binds(&self) -> TokenStream {
         let macro_path = &self.macro_path;
 
@@ -586,15 +576,15 @@ impl Definition {
 
         quote! {
             #[automatically_derived]
-            #[expect(non_camel_case_types, reason = "macro expansion")]
+            #[allow(non_camel_case_types, reason = "macro expansion")]
             trait #owned_trait #generics #where_clause {
                 #( #owned_methods )*
             }
         }
     }
 
-    /// Implements a trait generated by [`Self::generate_owned_trait()`] for a
-    /// `Either`.
+    /// Implements a trait generated by the [`Self::generate_owned_trait()`]
+    /// method for an `Either`.
     fn impl_owned_trait_for_either(&self) -> TokenStream {
         let macro_path = &self.macro_path;
         let orig_trait = self.item.path();
@@ -652,8 +642,8 @@ impl Definition {
         }
     }
 
-    /// Implements a trait generated by [`Self::generate_owned_trait()`] for a
-    /// `Void`.
+    /// Implements a trait generated by the [`Self::generate_owned_trait()`]
+    /// method for a `Void`.
     fn impl_owned_trait_for_void(&self) -> TokenStream {
         let macro_path = &self.macro_path;
         let owned_trait = &self.owned_trait_ident;
@@ -696,15 +686,15 @@ impl Definition {
 
         quote! {
             #[automatically_derived]
-            #[expect(non_camel_case_types, reason = "macro expansion")]
+            #[allow(non_camel_case_types, reason = "macro expansion")]
             trait #ref_trait #generics #where_clause {
                 #( #methods; )*
             }
         }
     }
 
-    /// Implements a trait generated by [`Self::generate_ref_trait()`] for a
-    /// `Either`.
+    /// Implements a trait generated by the [`Self::generate_ref_trait()`]
+    /// method for an `Either`.
     fn impl_ref_trait_for_either(&self, mutable: bool) -> TokenStream {
         let mut_ = mutable.then(|| quote! { mut });
         let macro_path = &self.macro_path;
@@ -773,8 +763,8 @@ impl Definition {
         }
     }
 
-    /// Implements a trait generated by [`Self::generate_ref_trait()`] for a
-    /// `Void`.
+    /// Implements a trait generated by the [`Self::generate_ref_trait()`]
+    /// method for a `Void`.
     fn impl_ref_trait_for_void(&self, mutable: bool) -> TokenStream {
         let macro_path = &self.macro_path;
         let ref_trait = if mutable {
@@ -804,9 +794,9 @@ impl Definition {
         }
     }
 
-    /// Generates a blanket impl of delegated trait for type, wrapping the inner
-    /// type, that implements `Convert` trait, where its associated types
-    /// satisfy the corresponding generated traits.
+    /// Generates a blanket impl of the delegated trait for type, wrapping the
+    /// inner type that implements the `Convert` trait, where its associated
+    /// types satisfy the corresponding generated traits.
     fn blanket_impl_for_wrapper_type(&self) -> TokenStream {
         let macro_path = &self.macro_path;
         let unsafety = self.unsafety;
@@ -962,11 +952,12 @@ impl Definition {
 
                 let signature = self.bind_signature_types(&m.sig, &mut seq_num);
 
+                // TODO: Use `RefCast` here instead of `mem::transmute`.
                 quote! {
                     #signature {
                         <#self_wrapped as #trait_path #ty_gens>:: #method_name(
-                            // SAFETY: Wrapper has `transparent` representation.
-                            #[expect(
+                            // SAFETY: Wrapper is `#[repr(transparent)]`.
+                            #[allow( // macro expansion
                                 clippy::missing_transmute_annotations,
                                 clippy::transmute_ptr_to_ptr,
                                 unsafe_code,
@@ -981,16 +972,15 @@ impl Definition {
 
         let impl_block = quote! {
             #[automatically_derived]
-            #unsafety impl #impl_gens #trait_path #ty_gens for T
-            #where_clause
+            #unsafety impl #impl_gens #trait_path #ty_gens for T #where_clause
             {
                 #( #methods )*
             }
         };
 
-        // TODO: `macro_rules!` has following limitations and requires us to use
-        //       the inner procedural macro:
-        //       - generics can't be normally parsed in `macro_rules!` macro.
+        // TODO: `macro_rules!` has the following limitations and requires to
+        //       use the inner procedural macro:
+        //       - generics can't be normally parsed in `macro_rules!` macro
         //       - type containing generic parameters can't be passed without
         //         them.
         quote! {
@@ -1009,7 +999,7 @@ impl Definition {
             // Always `pub` because of `#[macro_export]` limitation.
             #[automatically_derived]
             #[doc(hidden)]
-            #[expect(
+            #[allow( // macro expansion
                 non_snake_case,
                 unused_imports,
                 reason = "macro expansion",
@@ -1018,7 +1008,7 @@ impl Definition {
         }
     }
 
-    /// Implements the trait for provided `for` types.
+    /// Implements the delegated trait for provided `for` types.
     fn impl_trait_for(&self) -> TokenStream {
         let macro_path = &self.macro_path;
         let ident = &self.ident;
@@ -1051,19 +1041,15 @@ impl Definition {
     }
 
     // TODO: Add proper support for `Self:` bounds.
-    /// Generates assertion, that `Self:` bounds contain only marker traits like
+    /// Generates assertion of `Self:` bounds containing only marker traits like
     /// [`Sized`], [`Send`] or [`Sync`].
     fn generate_self_bound_assertions(&self) -> TokenStream {
-        /// Returns [`Iterator`] of [`syn::TraitBound`] for `Self:`.
+        /// Returns an [`Iterator`] of [`syn::TraitBound`] for `Self:`.
         fn self_trait_bounds(
             pred: &syn::WherePredicate,
         ) -> impl Iterator<Item = &syn::TraitBound> {
             let self_: syn::Type = parse_quote! { Self };
 
-            #[expect(
-                clippy::wildcard_enum_match_arm,
-                reason = "non exhaustive"
-            )]
             match pred {
                 syn::WherePredicate::Type(syn::PredicateType {
                     bounded_ty,
@@ -1073,22 +1059,13 @@ impl Definition {
                     bounds.iter().filter_map(|b| match b {
                         syn::TypeParamBound::Trait(tr) => Some(tr),
                         syn::TypeParamBound::Lifetime(_)
-                        | syn::TypeParamBound::Verbatim(_) => None,
-                        // TODO: Use `non_exhaustive_omitted_patterns`,
-                        //       once stabilized.
-                        //       https://github.com/rust-lang/rust/issues/89554
-                        // #[cfg_attr(
-                        //     test,
-                        //     deny(non_exhaustive_omitted_patterns)
-                        // )]
+                        | syn::TypeParamBound::Verbatim(_)
+                        | syn::TypeParamBound::PreciseCapture(_) => None,
                         bound => panic!("{bound:#?} not covered"),
                     })
                 }),
                 syn::WherePredicate::Lifetime(_) => None,
-                // TODO: Use `non_exhaustive_omitted_patterns`, once stabilized.
-                //       https://github.com/rust-lang/rust/issues/89554
-                // #[cfg_attr(test, deny(non_exhaustive_omitted_patterns))]
-                pred => panic!("{pred:#?} not covered"),
+                pred => panic!("unknown `syn::WherePredicate`: {pred:?}"),
             }
             .into_iter()
             .flatten()
@@ -1115,7 +1092,7 @@ impl Definition {
     /// Returns an [`Iterator`] over methods with `&self` or `&mut self`
     /// receivers with [lifted] lifetimes.
     ///
-    /// [lifted]: utils::SignatureExt::lift_receiver_lifetime()
+    /// [lifted]: util::SignatureExt::lift_receiver_lifetime()
     fn ref_trait_signatures(
         &self,
         mutable: bool,
@@ -1132,8 +1109,8 @@ impl Definition {
         })
     }
 
-    /// Returns [`syn::Generics`] for traits generated by
-    /// [`Self::generate_ref_trait()`].
+    /// Returns [`Generics`] for traits generated by the
+    /// [`Self::generate_ref_trait()`] method.
     fn ref_trait_generics(&self) -> syn::Generics {
         let mut gens = self.generics.clone();
         gens.params.push(parse_quote! { '__delegate });
@@ -1145,10 +1122,6 @@ impl Definition {
 
     /// Returns [`Type`]s specified in method [`Signature`]s and their
     /// [`Generics`].
-    ///
-    /// [`Generics`]: syn::Generics
-    /// [`Signature`]: syn::Signature
-    /// [`Type`]: syn::Type
     fn methods_types(
         &self,
     ) -> impl Iterator<Item = (syn::Generics, syn::Type)> + '_ {
@@ -1183,11 +1156,8 @@ impl Definition {
             })
     }
 
-    /// Replaces all [`Type`]s in provided [`Signature`] with binded
+    /// Replaces all [`Type`]s in the provided [`Signature`] with bound
     /// [`Type`]s.
-    ///
-    /// [`Signature`]: syn::Signature
-    /// [`Type`]: syn::Type
     fn bind_signature_types(
         &self,
         orig: &syn::Signature,
@@ -1244,19 +1214,15 @@ impl Definition {
 /// Type to delegate the trait for.
 #[derive(Clone, Debug)]
 struct ForTy {
-    /// Type to delegate the trait for.
+    /// Name of the type to delegate the trait for.
     ty: syn::Path,
 
     /// [`Generics`] to be used in `impl` block.
-    ///
-    /// [`Generics`]: syn::Generics
     generics: Option<syn::Generics>,
 }
 
 impl ForTy {
-    /// Expands [`Generics`] as `for<...>`.
-    ///
-    /// [`Generics`]: syn::Generics
+    /// Expands [`Generics`] as `for<..>`.
     fn higher_rank_generics(&self) -> TokenStream {
         self.generics
             .as_ref()
@@ -1268,8 +1234,6 @@ impl ForTy {
     }
 
     /// Expands [`Generics`] as `where` clause.
-    ///
-    /// [`Generics`]: syn::Generics
     fn where_clause(&self) -> TokenStream {
         self.generics
             .as_ref()
@@ -1300,7 +1264,7 @@ impl Parse for ForTy {
     }
 }
 
-/// Item passed to [`Definition`].
+/// Possible items passed to a [`Definition`].
 #[derive(Clone, Debug)]
 enum Item {
     /// Definition of the crate-local trait.
@@ -1312,8 +1276,6 @@ enum Item {
 
 impl Item {
     /// Returns [`Path`] of this [`Item`].
-    ///
-    /// [`Path`]: syn::Path
     fn path(&self) -> syn::Path {
         match self {
             Self::Definition(item) => item.ident.clone().into(),

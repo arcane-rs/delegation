@@ -1,4 +1,3 @@
-#![expect(clippy::needless_doctest_main, reason = "readme")]
 #![doc = include_str!("../README.md")]
 #![deny(
     macro_use_extern_crate,
@@ -152,13 +151,14 @@
     variant_size_differences
 )]
 
-// Not part of the public API.
 #[doc(hidden)]
-#[path = "macros.rs"]
-pub mod __macros;
+pub mod private; // Not part of the public API.
+
+#[cfg(test)]
+#[doc(hidden)]
+mod used_only_in_benches {
+    use criterion as _;
+}
 
 #[doc(inline)]
 pub use codegen::delegate;
-
-#[cfg(test)]
-use criterion as _; // Used in benches.
