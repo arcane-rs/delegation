@@ -238,7 +238,7 @@ use self::macro_path::MacroPath;
 ///     }
 /// }
 ///
-/// #[delegate(derive(for<> AsInner<str>))]
+/// #[delegate(derive(AsInner<str>))]
 /// struct FirstName(String);
 ///
 /// #[delegate(derive(
@@ -358,7 +358,7 @@ use self::macro_path::MacroPath;
 /// }
 ///
 /// #[delegate(derive(
-///     for<> AsRef<str> as AsRefDef;
+///     AsRef<str> as AsRefDef;
 ///     AsStr as AsStrDef;
 /// ))]
 /// enum Name {

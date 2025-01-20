@@ -244,25 +244,32 @@ impl Definition {
     /// type.
     fn derive_traits(&self) -> TokenStream {
         let macro_path = &self.macro_path;
+
         let ident = &self.ident;
-        let (_, ty_gens, _) = self.generics.split_for_impl();
+        let (ty_impl_gens, ty_gens, ty_where_clause) =
+            self.generics.split_for_impl();
 
         self.derived_traits
             .iter()
             .map(|p| {
-                let hrg = p.higher_rank_generics();
+                let macro_rules_path = p.macro_rules_path();
+
                 let trait_path = &p.path;
+                let (trait_impl_gens, trait_where_clause) =
+                    p.higher_rank_generics();
+
+                let impl_gens =
+                    trait_impl_gens.as_ref().unwrap_or(&ty_impl_gens);
+                let where_clause = trait_where_clause.or(ty_where_clause);
+
                 let wrapper = p.wrapper_ty.as_ref().map_or_else(
                     || quote! { #macro_path ::Wrapper },
                     ToTokens::to_token_stream,
                 );
-                let macro_rules_path = p.macro_rules_path();
-                let where_clause = p.where_clause();
 
                 quote! {
                     #macro_rules_path!(
-                        #hrg
-                        #trait_path as #wrapper
+                        impl #impl_gens #trait_path as #wrapper
                         for #ident #ty_gens
                         #where_clause
                     );
@@ -610,24 +617,18 @@ impl DeriveTrait {
         path
     }
 
-    /// Expands [`Generics`] as `for<..>`.
-    fn higher_rank_generics(&self) -> TokenStream {
+    /// Expands [`Generics`] as [`ImplGenerics`] and [`WhereClause`].
+    ///
+    /// [`ImplGenerics`]: struct@syn::ImplGenerics
+    /// [`WhereClause`]: struct@syn::WhereClause
+    fn higher_rank_generics(
+        &self,
+    ) -> (Option<syn::ImplGenerics<'_>>, Option<&syn::WhereClause>) {
         self.generics
             .as_ref()
             .map(|gens| {
-                let (impl_gens, _, _) = gens.split_for_impl();
-                quote! { for #impl_gens }
-            })
-            .unwrap_or_default()
-    }
-
-    /// Expands [`Generics`] as `where` clause.
-    fn where_clause(&self) -> TokenStream {
-        self.generics
-            .as_ref()
-            .map(|gens| {
-                let (_, _, where_clause) = gens.split_for_impl();
-                quote! { #where_clause }
+                let (impl_gens, _, where_clause) = gens.split_for_impl();
+                (Some(impl_gens), where_clause)
             })
             .unwrap_or_default()
     }

@@ -1,5 +1,5 @@
 error[E0412]: cannot find type `V` in this scope
-  --> tests/errors/wrong_generics.rs:7:23
+  --> tests/fail/delegate/wrong_generics.rs:7:23
    |
 7  |   trait Versioned<const V: u8> {
    |                         ^ not found in this scope
@@ -16,7 +16,7 @@ help: you might be missing a type parameter
    |           +++
 
 error[E0107]: trait takes 0 lifetime arguments but 1 lifetime argument was supplied
-  --> tests/errors/wrong_generics.rs:20:13
+  --> tests/fail/delegate/wrong_generics.rs:20:13
    |
 20 |     for<'a> Versioned<'a>;
    |             ^^^^^^^^^---- help: remove the unnecessary generics
@@ -24,19 +24,19 @@ error[E0107]: trait takes 0 lifetime arguments but 1 lifetime argument was suppl
    |             expected 0 lifetime arguments
    |
 note: trait defined here, with 0 lifetime parameters
-  --> tests/errors/wrong_generics.rs:7:7
+  --> tests/fail/delegate/wrong_generics.rs:7:7
    |
 7  | trait Versioned<const V: u8> {
    |       ^^^^^^^^^
 
 error[E0107]: trait takes 1 generic argument but 0 generic arguments were supplied
-  --> tests/errors/wrong_generics.rs:20:13
+  --> tests/fail/delegate/wrong_generics.rs:20:13
    |
 20 |     for<'a> Versioned<'a>;
    |             ^^^^^^^^^ expected 1 generic argument
    |
 note: trait defined here, with 1 generic parameter: `V`
-  --> tests/errors/wrong_generics.rs:7:7
+  --> tests/fail/delegate/wrong_generics.rs:7:7
    |
 7  | trait Versioned<const V: u8> {
    |       ^^^^^^^^^ -----------
@@ -46,7 +46,7 @@ help: add missing generic argument
    |                         +++
 
 error[E0747]: unresolved item provided when a constant was expected
-  --> tests/errors/wrong_generics.rs:7:23
+  --> tests/fail/delegate/wrong_generics.rs:7:23
    |
 7  |   trait Versioned<const V: u8> {
    |                         ^
@@ -63,13 +63,13 @@ help: if this generic argument was intended as a const parameter, surround it wi
    |                       +   +
 
 error[E0107]: trait takes 1 generic argument but 0 generic arguments were supplied
-  --> tests/errors/wrong_generics.rs:20:13
+  --> tests/fail/delegate/wrong_generics.rs:20:13
    |
 20 |     for<'a> Versioned<'a>;
    |             ^^^^^^^^^ expected 1 generic argument
    |
 note: trait defined here, with 1 generic parameter: `V`
-  --> tests/errors/wrong_generics.rs:7:7
+  --> tests/fail/delegate/wrong_generics.rs:7:7
    |
 7  | trait Versioned<const V: u8> {
    |       ^^^^^^^^^ -----------

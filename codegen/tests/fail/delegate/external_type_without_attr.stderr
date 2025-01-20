@@ -1,12 +1,12 @@
 error[E0277]: the trait bound `Either<T, T>: Convert` is not satisfied
- --> tests/errors/external_type_without_attr.rs:3:1
+ --> tests/fail/delegate/external_type_without_attr.rs:3:1
   |
 3 | #[delegate(for(for<T: AsStr> Either<T, T>))]
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Convert` is not implemented for `Either<T, T>`
   |
-  = help: the trait `AsStr` is implemented for `delegation::__macros::Wrapper<__Delegate>`
-note: required for `delegation::__macros::Wrapper<Either<T, T>>` to implement `AsStr`
- --> tests/errors/external_type_without_attr.rs:3:1
+  = help: the trait `AsStr` is implemented for `delegation::private::Wrapper<__Delegate>`
+note: required for `delegation::private::Wrapper<Either<T, T>>` to implement `AsStr`
+ --> tests/fail/delegate/external_type_without_attr.rs:3:1
   |
 3 | #[delegate(for(for<T: AsStr> Either<T, T>))]
   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

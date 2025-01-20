@@ -1,27 +1,27 @@
 error[E0407]: method `as_ref` is not a member of trait `AsRefDef`
- --> tests/errors/external_trait_as_local.rs:5:5
+ --> tests/fail/delegate/external_trait_as_local.rs:5:5
   |
 5 |     fn as_ref(&self) -> &T;
   |     ^^ not a member of trait `AsRefDef`
 ...
-8 | #[delegate(derive(for<> AsRefDef<str>))]
-  | ---------------------------------------- in this procedural macro expansion
+8 | #[delegate(derive(AsRefDef<str>))]
+  | ---------------------------------- in this procedural macro expansion
   |
   = note: this error originates in the macro `AsRefDef` which comes from the expansion of the attribute macro `delegate` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0576]: cannot find method or associated constant `as_ref` in trait `AsRefDef`
- --> tests/errors/external_trait_as_local.rs:5:8
+ --> tests/fail/delegate/external_trait_as_local.rs:5:8
   |
 5 |     fn as_ref(&self) -> &T;
   |        ^^^^^^ not found in `AsRefDef`
 ...
-8 | #[delegate(derive(for<> AsRefDef<str>))]
-  | ---------------------------------------- in this procedural macro expansion
+8 | #[delegate(derive(AsRefDef<str>))]
+  | ---------------------------------- in this procedural macro expansion
   |
   = note: this error originates in the macro `AsRefDef` which comes from the expansion of the attribute macro `delegate` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error[E0046]: not all trait items implemented, missing: `Wrapper`, `__delegate_AsRefDef__Bind0`
- --> tests/errors/external_trait_as_local.rs:3:1
+ --> tests/fail/delegate/external_trait_as_local.rs:3:1
   |
 3 | #[delegate(as = AsRef)]
   | ^^^^^^^^^^^^^^^^^^^^^^^
@@ -30,7 +30,7 @@ error[E0046]: not all trait items implemented, missing: `Wrapper`, `__delegate_A
   | `Wrapper` from trait
   | `__delegate_AsRefDef__Bind0` from trait
 ...
-8 | #[delegate(derive(for<> AsRefDef<str>))]
-  | ---------------------------------------- in this procedural macro expansion
+8 | #[delegate(derive(AsRefDef<str>))]
+  | ---------------------------------- in this procedural macro expansion
   |
   = note: this error originates in the macro `AsRefDef` which comes from the expansion of the attribute macro `delegate` (in Nightly builds, run with -Z macro-backtrace for more info)

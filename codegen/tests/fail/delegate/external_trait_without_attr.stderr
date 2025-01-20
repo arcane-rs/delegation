@@ -1,5 +1,5 @@
 error: cannot find macro `AsRef` in this scope
- --> tests/errors/external_trait_without_attr.rs:3:25
+ --> tests/fail/delegate/external_trait_without_attr.rs:3:25
   |
 3 | #[delegate(derive(for<> AsRef<str>))]
   |                         ^^^^^

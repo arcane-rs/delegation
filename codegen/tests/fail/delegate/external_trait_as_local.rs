@@ -5,7 +5,7 @@ pub trait AsRefDef<T: ?Sized> {
     fn as_ref(&self) -> &T;
 }
 
-#[delegate(derive(for<> AsRefDef<str>))]
+#[delegate(derive(AsRefDef<str>))]
 pub enum Name {
     First(String),
 }

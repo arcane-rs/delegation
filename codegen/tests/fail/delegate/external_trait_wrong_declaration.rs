@@ -22,8 +22,8 @@ trait AsStrDef {
 }
 
 #[delegate(derive(
-for<> AsRef<str> as AsRefDef;
-AsStr as AsStrDef;
+    AsRef<str> as AsRefDef;
+    AsStr as AsStrDef;
 ))]
 enum Name {
     First(String),

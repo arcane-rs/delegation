@@ -1,5 +1,5 @@
 error: cannot find macro `AsStr` in this scope
- --> tests/errors/no_trait_attr.rs:7:19
+ --> tests/fail/delegate/no_trait_attr.rs:7:19
   |
 7 | #[delegate(derive(AsStr))]
   |                   ^^^^^

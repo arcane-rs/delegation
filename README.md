@@ -77,7 +77,7 @@ impl AsInner<str> for String {
     }
 }
 
-#[delegate(derive(for<> AsInner<str>))]
+#[delegate(derive(AsInner<str>))]
 struct FirstName(String);
 
 #[delegate(derive(
@@ -192,7 +192,7 @@ trait AsStrDef {
 }
 
 #[delegate(derive(
-    for<> AsRef<str> as AsRefDef;
+    AsRef<str> as AsRefDef;
     AsStr as AsStrDef;
 ))]
 enum Name {

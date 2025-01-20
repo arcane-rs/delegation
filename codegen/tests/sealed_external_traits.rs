@@ -48,7 +48,7 @@ mod sealed {
 }
 
 #[delegate(derive(
-    for<> AsRef<str> as sealed::AsRefDef;
+    AsRef<str> as sealed::AsRefDef;
     AsStr as sealed::AsStrDef;
 ))]
 enum Name {
