@@ -61,7 +61,7 @@ assert_eq!(name.as_str(), "Doe");
 
 ## Generics
 
-In some cases, a trait or a type requires additional generic parameters to implement delegation. For this case, macro provides `for<..>` and `where` syntax for `#[delegate(derive(..))]` and `#[delegate(for(..))]` attribute arguments. Specified generics will replace existing, provided by the trait/type definition. To remove generics when all types are known use `for<>`.
+In some cases, a trait or a type requires additional generic parameters to implement delegation. For this case, macro provides `for<..>` and `where` syntax for `#[delegate(derive(..))]` and `#[delegate(for(..))]` attribute arguments. Specified generics will replace existing, provided by the trait/type definition.
 
 ```rust
 use delegation::delegate;
