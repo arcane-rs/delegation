@@ -21,7 +21,7 @@ where
 }
 
 #[delegate(derive(
-    for<U> Named<String>
+    Named<String>
     where
         U: Named<String> + 'static;
 ))]

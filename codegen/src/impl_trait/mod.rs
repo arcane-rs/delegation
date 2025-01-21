@@ -19,7 +19,7 @@ use syn::{
     token,
 };
 #[cfg(doc)]
-use syn::{Generics, Path, Signature, Type, Visibility};
+use syn::{Generics, Path, Signature, Type, Visibility, WhereClause};
 
 use crate::MacroPath;
 
@@ -1222,29 +1222,31 @@ struct ForTy {
 
     /// [`Generics`] to be used in `impl` block.
     generics: Option<syn::Generics>,
+
+    /// [`WhereClause`] to be used in `impl` block.
+    where_clause: Option<syn::WhereClause>,
 }
 
 impl ForTy {
     /// Expands [`Generics`] as [`ImplGenerics`] and [`WhereClause`].
     ///
-    /// [`ImplGenerics`]: struct@syn::ImplGenerics
-    /// [`WhereClause`]: struct@syn::WhereClause
+    /// [`ImplGenerics`]: syn::ImplGenerics
     fn higher_rank_generics(
         &self,
     ) -> (Option<syn::ImplGenerics<'_>>, Option<&syn::WhereClause>) {
-        self.generics
-            .as_ref()
-            .map(|gens| {
-                let (impl_gens, _, where_clause) = gens.split_for_impl();
-                (Some(impl_gens), where_clause)
-            })
-            .unwrap_or_default()
+        (
+            self.generics.as_ref().map(|gens| {
+                let (impl_gens, _, _) = gens.split_for_impl();
+                impl_gens
+            }),
+            self.where_clause.as_ref(),
+        )
     }
 }
 
 impl Parse for ForTy {
     fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
-        let mut generics = input
+        let generics = input
             .peek(token::For)
             .then(|| {
                 _ = input.parse::<token::For>()?;
@@ -1252,12 +1254,9 @@ impl Parse for ForTy {
             })
             .transpose()?;
         let ty = input.parse()?;
-        if let Some(where_clause) = input.parse::<Option<syn::WhereClause>>()? {
-            generics.get_or_insert_with(syn::Generics::default).where_clause =
-                Some(where_clause);
-        }
+        let where_clause = input.parse::<Option<syn::WhereClause>>()?;
 
-        Ok(Self { ty, generics })
+        Ok(Self { ty, generics, where_clause })
     }
 }
 

@@ -13,7 +13,7 @@ use syn::{
     token,
 };
 #[cfg(doc)]
-use syn::{Attribute, Generics, Index, Path, Type};
+use syn::{Attribute, Generics, Index, Path, Type, WhereClause};
 
 use crate::MacroPath;
 
@@ -601,6 +601,9 @@ struct DeriveTrait {
 
     /// [`Generics`] to be used in `impl` block.
     generics: Option<syn::Generics>,
+
+    /// [`WhereClause`] to be used in `impl` block.
+    where_clause: Option<syn::WhereClause>,
 }
 
 impl DeriveTrait {
@@ -619,24 +622,23 @@ impl DeriveTrait {
 
     /// Expands [`Generics`] as [`ImplGenerics`] and [`WhereClause`].
     ///
-    /// [`ImplGenerics`]: struct@syn::ImplGenerics
-    /// [`WhereClause`]: struct@syn::WhereClause
+    /// [`ImplGenerics`]: syn::ImplGenerics
     fn higher_rank_generics(
         &self,
     ) -> (Option<syn::ImplGenerics<'_>>, Option<&syn::WhereClause>) {
-        self.generics
-            .as_ref()
-            .map(|gens| {
-                let (impl_gens, _, where_clause) = gens.split_for_impl();
-                (Some(impl_gens), where_clause)
-            })
-            .unwrap_or_default()
+        (
+            self.generics.as_ref().map(|gens| {
+                let (impl_gens, _, _) = gens.split_for_impl();
+                impl_gens
+            }),
+            self.where_clause.as_ref(),
+        )
     }
 }
 
 impl Parse for DeriveTrait {
     fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
-        let mut generics = input
+        let generics = input
             .peek(token::For)
             .then(|| {
                 _ = input.parse::<token::For>()?;
@@ -651,12 +653,9 @@ impl Parse for DeriveTrait {
                 input.parse()
             })
             .transpose()?;
-        if let Some(where_clause) = input.parse::<Option<syn::WhereClause>>()? {
-            generics.get_or_insert_with(Default::default).where_clause =
-                Some(where_clause);
-        }
+        let where_clause = input.parse::<Option<syn::WhereClause>>()?;
 
-        Ok(Self { path, wrapper_ty, generics })
+        Ok(Self { path, wrapper_ty, generics, where_clause })
     }
 }
 
