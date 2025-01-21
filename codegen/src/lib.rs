@@ -160,6 +160,7 @@ mod macro_path;
 #[doc(hidden)]
 mod used_only_in_integrations_tests {
     use delegation as _;
+    use rustversion as _;
     use trybuild as _;
 }
 

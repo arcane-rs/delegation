@@ -1,15 +1,5 @@
-error[E0277]: the trait bound `Either<T, T>: Convert` is not satisfied
- --> tests/fail/delegate/external_type_without_attr.rs:3:1
+error[E0432]: unresolved import `delegation::__macros`
+ --> tests/fail/delegate/external_type_without_attr.rs:1:18
   |
-3 | #[delegate(for(for<T: AsStr> Either<T, T>))]
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `Convert` is not implemented for `Either<T, T>`
-  |
-  = help: the trait `AsStr` is implemented for `delegation::private::Wrapper<__Delegate>`
-note: required for `delegation::private::Wrapper<Either<T, T>>` to implement `AsStr`
- --> tests/fail/delegate/external_type_without_attr.rs:3:1
-  |
-3 | #[delegate(for(for<T: AsStr> Either<T, T>))]
-  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-4 | trait AsStr {
-  |       ^^^^^
-  = note: this error originates in the attribute macro `delegate` (in Nightly builds, run with -Z macro-backtrace for more info)
+1 | use delegation::{__macros::Either, delegate};
+  |                  ^^^^^^^^ could not find `__macros` in `delegation`

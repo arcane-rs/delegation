@@ -1,21 +1,5 @@
-error[E0277]: the trait bound `EitherDef: From<Either<String, String>>` is not satisfied
-  --> tests/fail/delegate/external_type_without_conversion.rs:21:37
-   |
-21 | struct EitherString(#[delegate(as = EitherDef)] Either<String, String>);
-   |                                     ^^^^^^^^^ the trait `From<Either<String, String>>` is not implemented for `EitherDef`
-
-error[E0277]: the trait bound `&EitherDef: From<&Either<String, String>>` is not satisfied
-  --> tests/fail/delegate/external_type_without_conversion.rs:20:1
-   |
-20 | #[delegate(derive(AsStr))]
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `From<&Either<String, String>>` is not implemented for `&EitherDef`
-   |
-   = note: this error originates in the attribute macro `delegate` (in Nightly builds, run with -Z macro-backtrace for more info)
-
-error[E0277]: the trait bound `&mut EitherDef: From<&mut Either<String, String>>` is not satisfied
-  --> tests/fail/delegate/external_type_without_conversion.rs:20:1
-   |
-20 | #[delegate(derive(AsStr))]
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^ the trait `From<&mut Either<String, String>>` is not implemented for `&mut EitherDef`
-   |
-   = note: this error originates in the attribute macro `delegate` (in Nightly builds, run with -Z macro-backtrace for more info)
+error[E0432]: unresolved import `delegation::__macros`
+ --> tests/fail/delegate/external_type_without_conversion.rs:1:18
+  |
+1 | use delegation::{__macros::Either, delegate};
+  |                  ^^^^^^^^ could not find `__macros` in `delegation`

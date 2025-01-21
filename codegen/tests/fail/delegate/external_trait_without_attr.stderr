@@ -1,7 +1,7 @@
 error: cannot find macro `AsRef` in this scope
- --> tests/fail/delegate/external_trait_without_attr.rs:3:19
+ --> tests/fail/delegate/external_trait_without_attr.rs:3:25
   |
-3 | #[delegate(derive(AsRef<str>))]
-  |                   ^^^^^
+3 | #[delegate(derive(for<> AsRef<str>))]
+  |                         ^^^^^
   |
   = note: `AsRef` is in scope, but it is a trait, not a macro
