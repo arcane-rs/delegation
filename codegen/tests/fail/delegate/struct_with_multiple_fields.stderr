@@ -1,11 +1,11 @@
 error: struct must have exactly one field
- --> tests/errors/struct_with_multiple_fields.rs:4:17
+ --> tests/fail/delegate/struct_with_multiple_fields.rs:4:17
   |
 4 | struct FirstName(String, String);
   |                 ^^^^^^^^^^^^^^^^
 
 error: struct must have exactly one field
-  --> tests/errors/struct_with_multiple_fields.rs:7:13
+  --> tests/fail/delegate/struct_with_multiple_fields.rs:7:13
    |
 7  |   struct Name {
    |  _____________^

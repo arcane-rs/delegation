@@ -29,4 +29,5 @@ syn = { version = "2.0.81", features = ["clone-impls", "extra-traits", "full", "
 
 [dev-dependencies]
 delegation = { path = ".." }
+rustversion = "1.0"
 trybuild = "1.0.56"

@@ -1,5 +1,5 @@
 error: all trait method must have an untyped receiver
- --> tests/errors/not_allowed_typed_receivers.rs:5:5
+ --> tests/fail/delegate/not_allowed_typed_receivers.rs:5:5
   |
 5 |     fn id(this: &Self) -> usize;
   |     ^^
