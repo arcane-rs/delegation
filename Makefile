@@ -109,11 +109,6 @@ cargo.test: test.cargo
 #
 # Usage:
 #	make test.cargo [crate=<crate-name>] [careful=(no|yes)]
-#	                [gen=(no|yes)]
-
-ifeq ($(gen),yes)
-test-env = TRYBUILD=overwrite
-endif
 
 test.cargo:
 ifeq ($(careful),yes)
@@ -125,7 +120,6 @@ ifeq ($(shell rustup component list --toolchain=nightly \
 	rustup component add --toolchain=nightly rust-src
 endif
 endif
-	env $(test-env) \
 	cargo $(if $(call eq,$(careful),yes),+nightly careful,) test \
 		$(if $(call eq,$(crate),),--workspace,-p $(crate)) \
 		--all-features
