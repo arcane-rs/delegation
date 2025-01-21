@@ -1,5 +1,6 @@
+#[rustversion::stable(1.84)]
 #[test]
-fn compile_fail() {
+fn fail() {
     let t = trybuild::TestCases::new();
-    t.compile_fail("tests/fail/delegate/*.rs");
+    t.compile_fail("tests/fail/*/*.rs");
 }
