@@ -1,6 +1,6 @@
 use delegation::delegate;
 
-#[delegate(for(Name; FirstName; LastName))]
+#[delegate(for(Name, FirstName, LastName))]
 trait AsString {
     fn into_string(self) -> String;
     fn as_str(&self) -> &str;

@@ -69,7 +69,7 @@ use delegation::delegate;
 #[delegate(for(
     for<U> Case2<U>
     where
-        U: Named<N> + 'static;
+        U: Named<N> + 'static,
 ))]
 trait Named<N> {
     fn name(&self) -> N;
