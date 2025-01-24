@@ -15,7 +15,7 @@ impl Named<String> for User {
 #[delegate(derive(
     for<T> Named<T>
     where
-        T: Named<T> + 'static;
+        T: Named<T> + 'static,
 ))]
 struct Wrapper<T>(T);
 

@@ -247,7 +247,7 @@ use self::macro_path::MacroPath;
 /// #[delegate(derive(
 ///     for<N> Named<N>
 ///     where
-///         U: Named<N> + 'static;
+///         U: Named<N> + 'static,
 /// ))]
 /// enum Case1<U> {
 ///     User(U),
@@ -259,7 +259,7 @@ use self::macro_path::MacroPath;
 /// #[delegate(derive(
 ///    Named<String>
 ///    where
-///        U: Named<String> + 'static;
+///        U: Named<String> + 'static,
 /// ))]
 /// enum Case3<U> {
 ///     Case1(Case1<U>),
@@ -380,8 +380,8 @@ use self::macro_path::MacroPath;
 /// }
 ///
 /// #[delegate(derive(
-///     AsRef<str> as AsRefDef;
-///     AsStr as AsStrDef;
+///     AsRef<str> as AsRefDef,
+///     AsStr as AsStrDef,
 /// ))]
 /// enum Name {
 ///     First(String),

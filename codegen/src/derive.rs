@@ -20,7 +20,7 @@ use crate::{util::GenericsExt as _, MacroPath};
 /// Arguments for `#[delegate]` macro expansion on types (structs or enums).
 struct Args {
     /// `derive` attribute argument, specifying derived traits.
-    derive: Punctuated<DeriveTrait, token::Semi>,
+    derive: Punctuated<DeriveTrait, token::Comma>,
 }
 
 impl Parse for Args {

@@ -23,8 +23,8 @@ trait Versioned<const V: u8> {
 }
 
 #[delegate(derive(
-    Named<String>;
-    for<const V: u8> Versioned<{ V }>;
+    Named<String>,
+    for<const V: u8> Versioned<{ V }>,
 ))]
 enum Users {
     Oleg(UserOleg),

@@ -5,14 +5,14 @@ error[E0412]: cannot find type `V` in this scope
    |                         ^ not found in this scope
 ...
 19 | / #[delegate(derive(
-20 | |     for<'a> Versioned<'a>;
+20 | |     for<'a> Versioned<'a>,
 21 | | ))]
    | |___- in this procedural macro expansion
    |
    = note: this error originates in the macro `Versioned` which comes from the expansion of the attribute macro `delegate` (in Nightly builds, run with -Z macro-backtrace for more info)
 help: you might be missing a type parameter
    |
-20 |     for<'a, V> Versioned<'a>;
+20 |     for<'a, V> Versioned<'a>,
    |           +++
 
 error[E0107]: trait takes 0 lifetime arguments but 1 lifetime argument was supplied
@@ -52,7 +52,7 @@ error[E0747]: unresolved item provided when a constant was expected
    |                         ^
 ...
 19 | / #[delegate(derive(
-20 | |     for<'a> Versioned<'a>;
+20 | |     for<'a> Versioned<'a>,
 21 | | ))]
    | |___- in this procedural macro expansion
    |

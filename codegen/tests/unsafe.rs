@@ -22,7 +22,7 @@ unsafe impl AsString for String {
     }
 }
 
-#[delegate(derive(AsStr; AsString))]
+#[delegate(derive(AsStr, AsString))]
 struct Name(String);
 
 #[test]
