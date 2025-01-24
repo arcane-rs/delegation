@@ -21,7 +21,7 @@ use syn::{
 #[cfg(doc)]
 use syn::{Generics, Path, Signature, Type, Visibility, WhereClause};
 
-use crate::{MacroPath, util::GenericsExt as _};
+use crate::{util::GenericsExt as _, MacroPath};
 
 use self::util::{GenericsExt as _, SignatureExt as _};
 
@@ -1024,7 +1024,10 @@ impl Definition {
             .iter()
             .map(|for_ty| {
                 let ty = &for_ty.ty;
-                let gens = self.generics.merge(&for_ty.generics).merge_where_clause(&for_ty.where_clause);
+                let gens = self
+                    .generics
+                    .merge(for_ty.generics.as_ref())
+                    .merge_where_clause(for_ty.where_clause.as_ref());
                 let (impl_gens, _, where_clause) = gens.split_for_impl();
 
                 quote! {

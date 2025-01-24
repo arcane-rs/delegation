@@ -15,7 +15,7 @@ use syn::{
 #[cfg(doc)]
 use syn::{Attribute, Generics, Index, Path, Type, WhereClause};
 
-use crate::{MacroPath, util::GenericsExt as _};
+use crate::{util::GenericsExt as _, MacroPath};
 
 /// Arguments for `#[delegate]` macro expansion on types (structs or enums).
 struct Args {
@@ -252,7 +252,10 @@ impl Definition {
             .map(|p| {
                 let macro_rules_path = p.macro_rules_path();
                 let trait_path = &p.path;
-                let gens = self.generics.merge(&p.generics).merge_where_clause(&p.where_clause);
+                let gens = self
+                    .generics
+                    .merge(p.generics.as_ref())
+                    .merge_where_clause(p.where_clause.as_ref());
                 let (impl_gens, _, where_clause) = gens.split_for_impl();
 
                 let wrapper = p.wrapper_ty.as_ref().map_or_else(
