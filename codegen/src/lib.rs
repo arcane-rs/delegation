@@ -221,9 +221,9 @@ use self::macro_path::MacroPath;
 ///
 /// In some cases, a trait or a type requires additional generic parameters to
 /// implement delegation. For this case, macro provides `for<..>` and `where`
-/// syntax for `#[delegate(derive(..))]` and `#[delegate(for(..))]` attribute
-/// arguments. Specified generics will replace existing, provided by the
-/// trait/type definition.
+/// syntax for `#[delegate(derive(..))]`/`#[delegate(for(..))]` attribute
+/// arguments. Specified generics will be merged with the existing ones,
+/// provided by the trait/type definition.
 ///
 /// ```rust
 /// # use delegation::delegate;
