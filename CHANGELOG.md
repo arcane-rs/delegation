@@ -6,9 +6,10 @@ All user visible changes to this project will be documented in this file. This p
 
 
 
-## main
+## [0.4.0] · 2025-01-24
+[0.4.0]: https://github.com/arcane-rs/delegation/tree/v0.4.0
 
-[Diff](https://github.com/arcane-rs/delegation/compare/v0.3.0...main) | [Milestone](https://github.com/arcane-rs/delegation/milestone/2)
+[Diff](https://github.com/arcane-rs/delegation/compare/v0.3.0...v0.4.0) | [Milestone](https://github.com/arcane-rs/delegation/milestone/2)
 
 ## BC Breaks
 
