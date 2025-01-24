@@ -1,0 +1,8 @@
+error[E0403]: the name `T` is already used for a generic parameter in this item's generic parameters
+  --> tests/fail/delegate/duplicate_generics_parameters.rs:16:9
+   |
+16 |     for<T> Named<T>
+   |         ^ already used
+...
+20 | struct Wrapper<T>(T);
+   |                - first use of `T`

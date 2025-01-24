@@ -155,6 +155,7 @@ mod derive;
 mod impl_for;
 mod impl_trait;
 mod macro_path;
+pub(crate) mod util;
 
 #[cfg(test)]
 #[doc(hidden)]

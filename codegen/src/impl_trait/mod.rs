@@ -21,7 +21,7 @@ use syn::{
 #[cfg(doc)]
 use syn::{Generics, Path, Signature, Type, Visibility, WhereClause};
 
-use crate::MacroPath;
+use crate::{MacroPath, util::GenericsExt as _};
 
 use self::util::{GenericsExt as _, SignatureExt as _};
 
@@ -1024,7 +1024,7 @@ impl Definition {
             .iter()
             .map(|for_ty| {
                 let ty = &for_ty.ty;
-                let gens = for_ty.merge_generics(&self.generics);
+                let gens = self.generics.merge(&for_ty.generics).merge_where_clause(&for_ty.where_clause);
                 let (impl_gens, _, where_clause) = gens.split_for_impl();
 
                 quote! {
@@ -1220,38 +1220,6 @@ struct ForTy {
 
     /// [`WhereClause`] to be used in `impl` block.
     where_clause: Option<syn::WhereClause>,
-}
-
-impl ForTy {
-    /// Merges [`Generics`] of this [`ForTy`] with [`Generics`] belonging to the
-    /// trait.
-    fn merge_generics(&self, generics: &syn::Generics) -> syn::Generics {
-        let mut gens = generics.clone();
-        if let Some(g) = &self.generics {
-            gens.params.extend(g.params.iter().cloned());
-
-            let mut where_clause =
-                gens.where_clause.unwrap_or_else(|| parse_quote! { where });
-            where_clause.predicates.extend(
-                g.where_clause
-                    .as_ref()
-                    .map(|w| &w.predicates)
-                    .into_iter()
-                    .flatten()
-                    .cloned(),
-            );
-            gens.where_clause = Some(where_clause);
-        }
-
-        if let Some(c) = &self.where_clause {
-            let mut where_clause =
-                gens.where_clause.unwrap_or_else(|| parse_quote! { where });
-            where_clause.predicates.extend(c.predicates.iter().cloned());
-            gens.where_clause = Some(where_clause);
-        }
-
-        gens
-    }
 }
 
 impl Parse for ForTy {

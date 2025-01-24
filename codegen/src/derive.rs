@@ -15,7 +15,7 @@ use syn::{
 #[cfg(doc)]
 use syn::{Attribute, Generics, Index, Path, Type, WhereClause};
 
-use crate::MacroPath;
+use crate::{MacroPath, util::GenericsExt as _};
 
 /// Arguments for `#[delegate]` macro expansion on types (structs or enums).
 struct Args {
@@ -252,7 +252,7 @@ impl Definition {
             .map(|p| {
                 let macro_rules_path = p.macro_rules_path();
                 let trait_path = &p.path;
-                let gens = p.merge_generics(&self.generics);
+                let gens = self.generics.merge(&p.generics).merge_where_clause(&p.where_clause);
                 let (impl_gens, _, where_clause) = gens.split_for_impl();
 
                 let wrapper = p.wrapper_ty.as_ref().map_or_else(
@@ -611,36 +611,6 @@ impl DeriveTrait {
             seg.arguments = syn::PathArguments::None;
         }
         path
-    }
-
-    /// Merges [`Generics`] of this [`DeriveTrait`] with [`Generics`] belonging
-    /// to the type.
-    fn merge_generics(&self, generics: &syn::Generics) -> syn::Generics {
-        let mut gens = generics.clone();
-        if let Some(g) = &self.generics {
-            gens.params.extend(g.params.iter().cloned());
-
-            let mut where_clause =
-                gens.where_clause.unwrap_or_else(|| parse_quote! { where });
-            where_clause.predicates.extend(
-                g.where_clause
-                    .as_ref()
-                    .map(|w| &w.predicates)
-                    .into_iter()
-                    .flatten()
-                    .cloned(),
-            );
-            gens.where_clause = Some(where_clause);
-        }
-
-        if let Some(c) = &self.where_clause {
-            let mut where_clause =
-                gens.where_clause.unwrap_or_else(|| parse_quote! { where });
-            where_clause.predicates.extend(c.predicates.iter().cloned());
-            gens.where_clause = Some(where_clause);
-        }
-
-        gens
     }
 }
 
