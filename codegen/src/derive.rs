@@ -13,9 +13,9 @@ use syn::{
     token,
 };
 #[cfg(doc)]
-use syn::{Attribute, Generics, Index, Path, Type};
+use syn::{Attribute, Generics, Index, Path, Type, WhereClause};
 
-use crate::MacroPath;
+use crate::{util::GenericsExt as _, MacroPath};
 
 /// Arguments for `#[delegate]` macro expansion on types (structs or enums).
 struct Args {
@@ -250,19 +250,22 @@ impl Definition {
         self.derived_traits
             .iter()
             .map(|p| {
-                let hrg = p.higher_rank_generics();
+                let macro_rules_path = p.macro_rules_path();
                 let trait_path = &p.path;
+                let gens = self
+                    .generics
+                    .merge(p.generics.as_ref())
+                    .merge_where_clause(p.where_clause.as_ref());
+                let (impl_gens, _, where_clause) = gens.split_for_impl();
+
                 let wrapper = p.wrapper_ty.as_ref().map_or_else(
                     || quote! { #macro_path ::Wrapper },
                     ToTokens::to_token_stream,
                 );
-                let macro_rules_path = p.macro_rules_path();
-                let where_clause = p.where_clause();
 
                 quote! {
                     #macro_rules_path!(
-                        #hrg
-                        #trait_path as #wrapper
+                        impl #impl_gens #trait_path as #wrapper
                         for #ident #ty_gens
                         #where_clause
                     );
@@ -594,6 +597,9 @@ struct DeriveTrait {
 
     /// [`Generics`] to be used in `impl` block.
     generics: Option<syn::Generics>,
+
+    /// [`WhereClause`] to be used in `impl` block.
+    where_clause: Option<syn::WhereClause>,
 }
 
 impl DeriveTrait {
@@ -609,33 +615,11 @@ impl DeriveTrait {
         }
         path
     }
-
-    /// Expands [`Generics`] as `for<..>`.
-    fn higher_rank_generics(&self) -> TokenStream {
-        self.generics
-            .as_ref()
-            .map(|gens| {
-                let (impl_gens, _, _) = gens.split_for_impl();
-                quote! { for #impl_gens }
-            })
-            .unwrap_or_default()
-    }
-
-    /// Expands [`Generics`] as `where` clause.
-    fn where_clause(&self) -> TokenStream {
-        self.generics
-            .as_ref()
-            .map(|gens| {
-                let (_, _, where_clause) = gens.split_for_impl();
-                quote! { #where_clause }
-            })
-            .unwrap_or_default()
-    }
 }
 
 impl Parse for DeriveTrait {
     fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
-        let mut generics = input
+        let generics = input
             .peek(token::For)
             .then(|| {
                 _ = input.parse::<token::For>()?;
@@ -650,12 +634,9 @@ impl Parse for DeriveTrait {
                 input.parse()
             })
             .transpose()?;
-        if let Some(where_clause) = input.parse::<Option<syn::WhereClause>>()? {
-            generics.get_or_insert_with(Default::default).where_clause =
-                Some(where_clause);
-        }
+        let where_clause = input.parse::<Option<syn::WhereClause>>()?;
 
-        Ok(Self { path, wrapper_ty, generics })
+        Ok(Self { path, wrapper_ty, generics, where_clause })
     }
 }
 

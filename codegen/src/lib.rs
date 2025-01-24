@@ -155,6 +155,7 @@ mod derive;
 mod impl_for;
 mod impl_trait;
 mod macro_path;
+pub(crate) mod util;
 
 #[cfg(test)]
 #[doc(hidden)]
@@ -220,39 +221,59 @@ use self::macro_path::MacroPath;
 ///
 /// In some cases, a trait or a type requires additional generic parameters to
 /// implement delegation. For this case, macro provides `for<..>` and `where`
-/// syntax for `#[delegate(derive(..))]` and `#[delegate(for(..))]` attribute
-/// arguments. Specified generics will replace existing, provided by the
-/// trait/type definition. To remove generics when all types are known use
-/// `for<>`.
+/// syntax for `#[delegate(derive(..))]`/`#[delegate(for(..))]` attribute
+/// arguments. Specified generics will be merged with the existing ones,
+/// provided by the trait/type definition.
 ///
 /// ```rust
 /// # use delegation::delegate;
 /// #
-/// #[delegate]
-/// trait AsInner<T: ?Sized> {
-///     fn as_inner(&self) -> &T;
+/// #[delegate(for(
+///     for<U> Case2<U>
+///     where
+///         U: Named<N> + 'static;
+/// ))]
+/// trait Named<N> {
+///     fn name(&self) -> N;
 /// }
 ///
-/// impl AsInner<str> for String {
-///     fn as_inner(&self) -> &str {
-///         self
+/// struct User(String);
+/// impl Named<String> for User {
+///     fn name(&self) -> String {
+///         self.0.clone()
 ///     }
 /// }
 ///
-/// #[delegate(derive(for<> AsInner<str>))]
-/// struct FirstName(String);
+/// #[delegate(derive(
+///     for<N> Named<N>
+///     where
+///         U: Named<N> + 'static;
+/// ))]
+/// enum Case1<U> {
+///     User(U),
+/// }
+///
+/// #[delegate]
+/// struct Case2<U>(U);
 ///
 /// #[delegate(derive(
-///     for<I> AsInner<str>
-///     where
-///         I: AsInner<str> + 'static;
+///    Named<String>
+///    where
+///        U: Named<String> + 'static;
 /// ))]
-/// struct NickName<I>(I);
+/// enum Case3<U> {
+///     Case1(Case1<U>),
+///     Case2(Case2<U>),
+/// }
 ///
-/// let first = FirstName("John".into());
-/// assert_eq!(first.as_inner(), "John");
-/// let last = NickName::<FirstName>(first);
-/// assert_eq!(last.as_inner(), "John");
+/// let user1 = Case1::User(User("Alice".to_string()));
+/// assert_eq!(user1.name(), "Alice");
+///
+/// let user2 = Case2(User("Bob".to_string()));
+/// assert_eq!(user2.name(), "Bob");
+///
+/// let user3 = Case3::Case1(Case1::User(User("Charlie".to_string())));
+/// assert_eq!(user3.name(), "Charlie");
 /// ```
 ///
 /// # External types
@@ -359,7 +380,7 @@ use self::macro_path::MacroPath;
 /// }
 ///
 /// #[delegate(derive(
-///     for<> AsRef<str> as AsRefDef;
+///     AsRef<str> as AsRefDef;
 ///     AsStr as AsStrDef;
 /// ))]
 /// enum Name {

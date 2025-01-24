@@ -27,7 +27,7 @@ pub(super) struct Definition {
     /// [`Generics`] to override the [`template`] with.
     ///
     /// [`template`]: Definition::template
-    generics: Option<syn::Generics>,
+    generics: syn::Generics,
 
     /// Trait to override the [`template`] with.
     ///
@@ -55,13 +55,8 @@ impl Parse for Definition {
     fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
         let template = input.parse()?;
 
-        let mut generics = input
-            .peek(token::For)
-            .then(|| {
-                _ = input.parse::<token::For>()?;
-                input.parse::<syn::Generics>()
-            })
-            .transpose()?;
+        _ = input.parse::<token::Impl>()?;
+        let mut generics = input.parse::<syn::Generics>()?;
 
         let trait_path = input.parse()?;
 
@@ -72,8 +67,7 @@ impl Parse for Definition {
         let self_ty = input.parse()?;
 
         if let Some(where_clause) = input.parse::<Option<syn::WhereClause>>()? {
-            generics.get_or_insert_with(Default::default).where_clause =
-                Some(where_clause);
+            generics.where_clause = Some(where_clause);
         }
 
         let mut this = Self {
@@ -256,8 +250,6 @@ impl Definition {
     /// Overrides template's [`Generics`] with the specified ones, if new
     /// [`Generics`] are provided.
     fn specify_generics(&mut self) {
-        if let Some(gens) = &self.generics {
-            self.template.generics = gens.clone();
-        }
+        self.template.generics = self.generics.clone();
     }
 }

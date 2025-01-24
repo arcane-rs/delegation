@@ -1,6 +1,6 @@
 use delegation_codegen::delegate;
 
-#[delegate(derive(for<> AsRef<str>))]
+#[delegate(derive(AsRef<str>))]
 pub enum Name {
     First(String),
 }

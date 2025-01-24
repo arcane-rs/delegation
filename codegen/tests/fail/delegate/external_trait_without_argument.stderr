@@ -4,8 +4,8 @@ error[E0576]: cannot find associated type `Wrapper` in trait `AsRefDef`
 3 | #[delegate]
   | ^^^^^^^^^^^ not found in `AsRefDef`
 ...
-8 | #[delegate(derive(for<> AsRef<str> as AsRefDef))]
-  | ------------------------------------------------- in this procedural macro expansion
+8 | #[delegate(derive(AsRef<str> as AsRefDef))]
+  | ------------------------------------------- in this procedural macro expansion
   |
   = note: this error originates in the macro `::delegation::private::impl_for` which comes from the expansion of the attribute macro `delegate` (in Nightly builds, run with -Z macro-backtrace for more info)
 
@@ -15,7 +15,7 @@ error[E0220]: associated type `__delegate_AsRefDef__Bind0` not found for `Self`
 4 | pub trait AsRefDef<T: ?Sized> {
   |           ^^^^^^^^ there is an associated type `__delegate_AsRefDef__Bind0` in the trait `__delegate_AsRefDef__Scope`
 ...
-8 | #[delegate(derive(for<> AsRef<str> as AsRefDef))]
-  | ------------------------------------------------- in this procedural macro expansion
+8 | #[delegate(derive(AsRef<str> as AsRefDef))]
+  | ------------------------------------------- in this procedural macro expansion
   |
   = note: this error originates in the macro `AsRefDef` which comes from the expansion of the attribute macro `delegate` (in Nightly builds, run with -Z macro-backtrace for more info)

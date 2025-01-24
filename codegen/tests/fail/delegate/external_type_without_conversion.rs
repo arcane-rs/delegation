@@ -1,4 +1,4 @@
-use delegation::{__macros::Either, delegate};
+use delegation::{private::Either, delegate};
 
 #[delegate]
 trait AsStr {

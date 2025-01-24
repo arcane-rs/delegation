@@ -19,9 +19,9 @@ use syn::{
     token,
 };
 #[cfg(doc)]
-use syn::{Generics, Path, Signature, Type, Visibility};
+use syn::{Generics, Path, Signature, Type, Visibility, WhereClause};
 
-use crate::MacroPath;
+use crate::{util::GenericsExt as _, MacroPath};
 
 use self::util::{GenericsExt as _, SignatureExt as _};
 
@@ -1023,14 +1023,16 @@ impl Definition {
         self.delegate_for
             .iter()
             .map(|for_ty| {
-                let hrg = for_ty.higher_rank_generics();
                 let ty = &for_ty.ty;
-                let where_clause = for_ty.where_clause();
+                let gens = self
+                    .generics
+                    .merge(for_ty.generics.as_ref())
+                    .merge_where_clause(for_ty.where_clause.as_ref());
+                let (impl_gens, _, where_clause) = gens.split_for_impl();
 
                 quote! {
                     #ident!(
-                        #hrg
-                        #trait_path #ty_gens as #wrapper
+                        impl #impl_gens #trait_path #ty_gens as #wrapper
                         for #ty
                         #where_clause
                     );
@@ -1218,35 +1220,14 @@ struct ForTy {
 
     /// [`Generics`] to be used in `impl` block.
     generics: Option<syn::Generics>,
-}
 
-impl ForTy {
-    /// Expands [`Generics`] as `for<..>`.
-    fn higher_rank_generics(&self) -> TokenStream {
-        self.generics
-            .as_ref()
-            .map(|gens| {
-                let (impl_gens, _, _) = gens.split_for_impl();
-                quote! { for #impl_gens }
-            })
-            .unwrap_or_default()
-    }
-
-    /// Expands [`Generics`] as `where` clause.
-    fn where_clause(&self) -> TokenStream {
-        self.generics
-            .as_ref()
-            .map(|gens| {
-                let (_, _, where_clause) = gens.split_for_impl();
-                quote! { #where_clause }
-            })
-            .unwrap_or_default()
-    }
+    /// [`WhereClause`] to be used in `impl` block.
+    where_clause: Option<syn::WhereClause>,
 }
 
 impl Parse for ForTy {
     fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
-        let mut generics = input
+        let generics = input
             .peek(token::For)
             .then(|| {
                 _ = input.parse::<token::For>()?;
@@ -1254,12 +1235,9 @@ impl Parse for ForTy {
             })
             .transpose()?;
         let ty = input.parse()?;
-        if let Some(where_clause) = input.parse::<Option<syn::WhereClause>>()? {
-            generics.get_or_insert_with(syn::Generics::default).where_clause =
-                Some(where_clause);
-        }
+        let where_clause = input.parse::<Option<syn::WhereClause>>()?;
 
-        Ok(Self { ty, generics })
+        Ok(Self { ty, generics, where_clause })
     }
 }
 

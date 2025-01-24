@@ -42,7 +42,7 @@ trait AsStrDef {
 }
 
 #[delegate(derive(
-    for<> AsRef<str> as AsRefDef;
+    AsRef<str> as AsRefDef;
     AsStr as AsStrDef;
 ))]
 enum Name {

@@ -18,8 +18,8 @@ error[E0053]: method `as_ref` has an incompatible type for trait
    |                 ^^^^^^^^^ types differ in mutability
 ...
 24 | / #[delegate(derive(
-25 | | for<> AsRef<str> as AsRefDef;
-26 | | AsStr as AsStrDef;
+25 | |     AsRef<str> as AsRefDef;
+26 | |     AsStr as AsStrDef;
 27 | | ))]
    | |___- in this procedural macro expansion
    |
@@ -54,8 +54,8 @@ error[E0308]: mismatched types
    |   expected `&mut str` because of return type
 ...
 24 | / #[delegate(derive(
-25 | | for<> AsRef<str> as AsRefDef;
-26 | | AsStr as AsStrDef;
+25 | |     AsRef<str> as AsRefDef;
+26 | |     AsStr as AsStrDef;
 27 | | ))]
    | |___- in this procedural macro expansion
    |
