@@ -8,6 +8,4 @@ trait AsStr {
 #[delegate(derive(AsStr))]
 struct FirstName(String);
 
-fn main() {
-    unreachable!()
-}
+fn main() {}

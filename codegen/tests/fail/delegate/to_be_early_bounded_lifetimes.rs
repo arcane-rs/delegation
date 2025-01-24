@@ -17,6 +17,4 @@ enum EitherDef {
     Right(String),
 }
 
-fn main() {
-    unreachable!()
-}
+fn main() {}

@@ -10,6 +10,4 @@ pub enum Name {
     First(String),
 }
 
-fn main() {
-    unreachable!()
-}
+fn main() {}

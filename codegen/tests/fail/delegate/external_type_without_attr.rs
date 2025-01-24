@@ -11,6 +11,4 @@ impl AsStr for String {
     }
 }
 
-fn main() {
-    unreachable!()
-}
+fn main() {}

@@ -5,6 +5,4 @@ enum Name {
     First { first: String, last: String },
 }
 
-fn main() {
-    unreachable!()
-}
+fn main() {}

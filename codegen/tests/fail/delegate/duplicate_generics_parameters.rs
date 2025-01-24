@@ -19,6 +19,4 @@ impl Named<String> for User {
 ))]
 struct Wrapper<T>(T);
 
-fn main() {
-    unreachable!()
-}
+fn main() {}

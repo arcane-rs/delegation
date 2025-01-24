@@ -23,6 +23,4 @@ enum Events {
     Create(Created),
 }
 
-fn main() {
-    unreachable!()
-}
+fn main() {}

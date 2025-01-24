@@ -20,6 +20,4 @@ enum EitherDef {
 #[delegate(derive(AsStr))]
 struct EitherString(#[delegate(as = EitherDef)] Either<String, String>);
 
-fn main() {
-    unreachable!()
-}
+fn main() {}

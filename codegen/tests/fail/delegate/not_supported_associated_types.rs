@@ -7,6 +7,4 @@ trait Parser {
     type Buffer;
 }
 
-fn main() {
-    unreachable!()
-}
+fn main() {}

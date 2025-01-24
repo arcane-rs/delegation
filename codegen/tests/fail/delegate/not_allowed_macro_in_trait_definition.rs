@@ -5,6 +5,4 @@ trait Channel {
     unreachable!();
 }
 
-fn main() {
-    unreachable!()
-}
+fn main() {}

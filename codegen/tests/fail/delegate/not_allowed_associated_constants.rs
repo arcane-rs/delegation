@@ -5,6 +5,4 @@ trait Channel {
     const ID: usize;
 }
 
-fn main() {
-    unreachable!()
-}
+fn main() {}

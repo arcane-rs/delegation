@@ -9,6 +9,4 @@ struct Name {
     last: String,
 }
 
-fn main() {
-    unreachable!()
-}
+fn main() {}

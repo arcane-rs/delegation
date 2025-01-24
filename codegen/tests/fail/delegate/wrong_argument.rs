@@ -54,6 +54,4 @@ enum UserName {
 #[delegate(as = SomeType)]
 struct MemberName(String);
 
-fn main() {
-    unreachable!()
-}
+fn main() {}

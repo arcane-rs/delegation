@@ -5,6 +5,4 @@ trait Channel {
     fn id(this: &Self) -> usize;
 }
 
-fn main() {
-    unreachable!()
-}
+fn main() {}
