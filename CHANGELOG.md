@@ -13,8 +13,10 @@ All user visible changes to this project will be documented in this file. This p
 ## BC Breaks
 
 - Made `for<..>` syntax in `#[delegate(derive(..))]`/`#[delegate(for(..))]` attribute arguments only for declaring additional generic parameters not present on type/trait already. ([#10])
+- Made entries in `#[delegate(derive(..))]`/`#[delegate(for(..))]` attribute arguments separated by comma instead of semicolon. ([#11])
 
 [#10]: https://github.com/arcane-rs/delegation/pull/10
+[#11]: https://github.com/arcane-rs/delegation/pull/11
 
 
 

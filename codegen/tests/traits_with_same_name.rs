@@ -30,7 +30,7 @@ mod last_name {
     }
 }
 
-#[delegate(derive(first_name::AsStr; last_name::AsStr))]
+#[delegate(derive(first_name::AsStr, last_name::AsStr))]
 struct Name(String);
 
 #[test]

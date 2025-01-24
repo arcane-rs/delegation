@@ -17,7 +17,7 @@ impl<const V: u8> Versioned<V> for Created {
 }
 
 #[delegate(derive(
-    for<'a> Versioned<'a>;
+    for<'a> Versioned<'a>,
 ))]
 enum Events {
     Create(Created),

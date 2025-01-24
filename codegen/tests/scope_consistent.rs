@@ -28,7 +28,7 @@ mod b {
     #[delegation::delegate(derive(
         super::a::ToMyStruct<Inner>
         where
-            Inner: Copy + Into<super::MyStruct> + 'static;
+            Inner: Copy + Into<super::MyStruct> + 'static,
         for<'a> super::a::ToGeneric<'a, Inner>
         where
             Inner: Copy + 'static,

@@ -25,7 +25,7 @@ error: generic parameters may not be used in const operations
 error: generic parameters may not be used in const operations
   --> tests/fail/delegate/expr_in_generic_params.rs:26:34
    |
-26 |     for<const V: u8> Versioned<{ V + 1 }>;
+26 |     for<const V: u8> Versioned<{ V + 1 }>,
    |                                  ^ cannot perform const operation using `V`
    |
    = help: const parameters may only be used as standalone arguments, i.e. `V`
@@ -33,7 +33,7 @@ error: generic parameters may not be used in const operations
 error[E0207]: the const parameter `V` is not constrained by the impl trait, self type, or predicates
   --> tests/fail/delegate/expr_in_generic_params.rs:26:9
    |
-26 |     for<const V: u8> Versioned<{ V + 1 }>;
+26 |     for<const V: u8> Versioned<{ V + 1 }>,
    |         ^^^^^^^^^^^ unconstrained const parameter
    |
    = note: expressions using a const parameter must map each value to a distinct output value

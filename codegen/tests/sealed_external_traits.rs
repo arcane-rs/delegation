@@ -48,8 +48,8 @@ mod sealed {
 }
 
 #[delegate(derive(
-    AsRef<str> as sealed::AsRefDef;
-    AsStr as sealed::AsStrDef;
+    AsRef<str> as sealed::AsRefDef,
+    AsStr as sealed::AsStrDef,
 ))]
 enum Name {
     First(String),

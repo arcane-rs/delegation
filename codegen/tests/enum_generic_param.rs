@@ -23,8 +23,8 @@ impl UserType<{ USER_BORIS }> for UserTypes {
 #[delegate(for(
     for<L> EitherUser<L, UserBoris>
     where
-        L: User + 'static;
-    GenericUser<{ USER_OLEG }, { USER_BORIS }>;
+        L: User + 'static,
+    GenericUser<{ USER_OLEG }, { USER_BORIS }>,
 ))]
 trait User {
     fn name(&self) -> &str;

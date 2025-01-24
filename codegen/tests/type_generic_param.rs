@@ -23,7 +23,7 @@ where
 #[delegate(derive(
     Named<String>
     where
-        U: Named<String> + 'static;
+        U: Named<String> + 'static,
 ))]
 enum Case2<U> {
     Admin(U),

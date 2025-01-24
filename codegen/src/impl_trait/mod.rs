@@ -21,14 +21,17 @@ use syn::{
 #[cfg(doc)]
 use syn::{Generics, Path, Signature, Type, Visibility, WhereClause};
 
-use crate::{util::GenericsExt as _, MacroPath};
+use crate::{
+    util::{GenericsExt as _, WhereClauseExt as _},
+    MacroPath,
+};
 
 use self::util::{GenericsExt as _, SignatureExt as _};
 
 /// Arguments of `#[delegate]` macro expansion on traits.
 struct Args {
     /// `for` attribute argument, specifying types for deriving.
-    r#for: Punctuated<ForTy, token::Semi>,
+    r#for: Punctuated<ForTy, token::Comma>,
 
     /// `as` attribute argument, specifying path to the trait this trait is
     /// referencing to.
@@ -1235,7 +1238,7 @@ impl Parse for ForTy {
             })
             .transpose()?;
         let ty = input.parse()?;
-        let where_clause = input.parse::<Option<syn::WhereClause>>()?;
+        let where_clause = syn::WhereClause::parse_thrifty_opt(input)?;
 
         Ok(Self { ty, generics, where_clause })
     }
