@@ -15,7 +15,10 @@ use syn::{
 #[cfg(doc)]
 use syn::{Attribute, Generics, Index, Path, Type, WhereClause};
 
-use crate::{util::GenericsExt as _, MacroPath};
+use crate::{
+    util::{GenericsExt as _, WhereClauseExt as _},
+    MacroPath,
+};
 
 /// Arguments for `#[delegate]` macro expansion on types (structs or enums).
 struct Args {
@@ -634,7 +637,7 @@ impl Parse for DeriveTrait {
                 input.parse()
             })
             .transpose()?;
-        let where_clause = input.parse::<Option<syn::WhereClause>>()?;
+        let where_clause = syn::WhereClause::parse_thrifty_opt(input)?;
 
         Ok(Self { path, wrapper_ty, generics, where_clause })
     }
