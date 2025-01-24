@@ -66,30 +66,52 @@ In some cases, a trait or a type requires additional generic parameters to imple
 ```rust
 use delegation::delegate;
 
-#[delegate]
-trait AsInner<T: ?Sized> {
-    fn as_inner(&self) -> &T;
+#[delegate(for(
+    for<U> Case2<U>
+    where
+        U: Named<N> + 'static;
+))]
+trait Named<N> {
+    fn name(&self) -> N;
 }
 
-impl AsInner<str> for String {
-    fn as_inner(&self) -> &str {
-        self
+struct User(String);
+impl Named<String> for User {
+    fn name(&self) -> String {
+        self.0.clone()
     }
 }
 
-#[delegate(derive(AsInner<str>))]
-struct FirstName(String);
+#[delegate(derive(
+    for<N> Named<N>
+    where
+        U: Named<N> + 'static;
+))]
+enum Case1<U> {
+    User(U),
+}
+
+#[delegate]
+struct Case2<U>(U);
 
 #[delegate(derive(
-    AsInner<str> where I: AsInner<str> + 'static;
+   Named<String>
+   where
+       U: Named<String> + 'static;
 ))]
-struct NickName<I>(I);
+enum Case3<U> {
+    Case1(Case1<U>),
+    Case2(Case2<U>),
+}
 
-let first = FirstName("John".into());
-assert_eq!(first.as_inner(), "John");
+let user1 = Case1::User(User("Alice".to_string()));
+assert_eq!(user1.name(), "Alice");
 
-let last = NickName::<FirstName>(first);
-assert_eq!(last.as_inner(), "John");
+let user2 = Case2(User("Bob".to_string()));
+assert_eq!(user2.name(), "Bob");
+
+let user3 = Case3::Case1(Case1::User(User("Charlie".to_string())));
+assert_eq!(user3.name(), "Charlie");
 ```
 
 

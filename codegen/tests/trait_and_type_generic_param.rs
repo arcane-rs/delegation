@@ -26,8 +26,17 @@ enum Case1<U> {
 }
 
 #[delegate]
-enum Case2<U> {
-    User(U),
+struct Case2<U>(U);
+
+#[delegate(derive(
+   Named<String>
+   where
+       U: Named<String> + 'static;
+))]
+enum Case3<U> {
+    Case1(Case1<U>),
+    #[allow(dead_code)]
+    Case2(Case2<U>),
 }
 
 #[test]
@@ -35,6 +44,9 @@ fn derives_with_generics() {
     let user1 = Case1::User(User("User".to_string()));
     assert_eq!(user1.name(), "User");
 
-    let user2 = Case2::User(User("User".to_string()));
+    let user2 = Case2(User("User".to_string()));
     assert_eq!(user2.name(), "User");
+
+    let user3 = Case3::Case1(Case1::User(User("Charlie".to_string())));
+    assert_eq!(user3.name(), "Charlie");
 }
