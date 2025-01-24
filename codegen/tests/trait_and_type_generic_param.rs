@@ -1,6 +1,10 @@
 use delegation::delegate;
 
-#[delegate]
+#[delegate(for(
+    for<U> Case2<U>
+    where
+        U: Named<N> + 'static;
+))]
 trait Named<N> {
     fn name(&self) -> N;
 }
@@ -17,12 +21,20 @@ impl Named<String> for User {
     where
         U: Named<N> + 'static;
 ))]
-enum Case<U> {
+enum Case1<U> {
+    User(U),
+}
+
+#[delegate]
+enum Case2<U> {
     User(U),
 }
 
 #[test]
 fn derives_with_generics() {
-    let user = Case::User(User("User".to_string()));
-    assert_eq!(user.name(), "User");
+    let user1 = Case1::User(User("User".to_string()));
+    assert_eq!(user1.name(), "User");
+
+    let user2 = Case2::User(User("User".to_string()));
+    assert_eq!(user2.name(), "User");
 }

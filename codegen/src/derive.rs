@@ -245,19 +245,15 @@ impl Definition {
     fn derive_traits(&self) -> TokenStream {
         let macro_path = &self.macro_path;
         let ident = &self.ident;
-        let (ty_impl_gens, ty_gens, ty_where_clause) =
-            self.generics.split_for_impl();
+        let (_, ty_gens, _) = self.generics.split_for_impl();
 
         self.derived_traits
             .iter()
             .map(|p| {
                 let macro_rules_path = p.macro_rules_path();
                 let trait_path = &p.path;
-                let (trait_impl_gens, trait_where_clause) =
-                    p.higher_rank_generics();
-                let impl_gens =
-                    trait_impl_gens.as_ref().unwrap_or(&ty_impl_gens);
-                let where_clause = trait_where_clause.or(ty_where_clause);
+                let gens = p.merge_generics(&self.generics);
+                let (impl_gens, _, where_clause) = gens.split_for_impl();
 
                 let wrapper = p.wrapper_ty.as_ref().map_or_else(
                     || quote! { #macro_path ::Wrapper },
@@ -617,19 +613,34 @@ impl DeriveTrait {
         path
     }
 
-    /// Expands [`Generics`] as [`ImplGenerics`] and [`WhereClause`].
-    ///
-    /// [`ImplGenerics`]: syn::ImplGenerics
-    fn higher_rank_generics(
-        &self,
-    ) -> (Option<syn::ImplGenerics<'_>>, Option<&syn::WhereClause>) {
-        (
-            self.generics.as_ref().map(|gens| {
-                let (impl_gens, _, _) = gens.split_for_impl();
-                impl_gens
-            }),
-            self.where_clause.as_ref(),
-        )
+    /// Merges [`Generics`] of this [`DeriveTrait`] with [`Generics`] belonging
+    /// to the type.
+    fn merge_generics(&self, generics: &syn::Generics) -> syn::Generics {
+        let mut gens = generics.clone();
+        if let Some(g) = &self.generics {
+            gens.params.extend(g.params.iter().cloned());
+
+            let mut where_clause =
+                gens.where_clause.unwrap_or_else(|| parse_quote! { where });
+            where_clause.predicates.extend(
+                g.where_clause
+                    .as_ref()
+                    .map(|w| &w.predicates)
+                    .into_iter()
+                    .flatten()
+                    .cloned(),
+            );
+            gens.where_clause = Some(where_clause);
+        }
+
+        if let Some(c) = &self.where_clause {
+            let mut where_clause =
+                gens.where_clause.unwrap_or_else(|| parse_quote! { where });
+            where_clause.predicates.extend(c.predicates.iter().cloned());
+            gens.where_clause = Some(where_clause);
+        }
+
+        gens
     }
 }
 

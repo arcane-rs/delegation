@@ -80,7 +80,7 @@ impl<'a> Named<'a> for &'a User {
 }
 
 #[expect(dead_code, reason = "testing purposes")]
-#[delegate(derive(for<'a> Named<'a>))]
+#[delegate(derive(Named<'a>))]
 enum CowUser<'a> {
     Borrowed(&'a User),
     Owned(User),
