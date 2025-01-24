@@ -1027,7 +1027,6 @@ impl Definition {
                 let ty = &for_ty.ty;
                 let (ty_impl_gens, ty_where_clause) =
                     for_ty.higher_rank_generics();
-
                 let impl_gens =
                     ty_impl_gens.as_ref().unwrap_or(&trait_impl_gens);
                 let where_clause = ty_where_clause.or(trait_where_clause);

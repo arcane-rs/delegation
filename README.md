@@ -81,9 +81,7 @@ impl AsInner<str> for String {
 struct FirstName(String);
 
 #[delegate(derive(
-    for<I> AsInner<str>
-    where
-        I: AsInner<str> + 'static;
+    AsInner<str> where I: AsInner<str> + 'static;
 ))]
 struct NickName<I>(I);
 

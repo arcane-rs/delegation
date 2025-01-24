@@ -244,7 +244,6 @@ impl Definition {
     /// type.
     fn derive_traits(&self) -> TokenStream {
         let macro_path = &self.macro_path;
-
         let ident = &self.ident;
         let (ty_impl_gens, ty_gens, ty_where_clause) =
             self.generics.split_for_impl();
@@ -253,11 +252,9 @@ impl Definition {
             .iter()
             .map(|p| {
                 let macro_rules_path = p.macro_rules_path();
-
                 let trait_path = &p.path;
                 let (trait_impl_gens, trait_where_clause) =
                     p.higher_rank_generics();
-
                 let impl_gens =
                     trait_impl_gens.as_ref().unwrap_or(&ty_impl_gens);
                 let where_clause = trait_where_clause.or(ty_where_clause);
