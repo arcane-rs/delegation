@@ -4,7 +4,9 @@ use std::iter;
 
 use itertools::Itertools as _;
 use proc_macro2::{Span, TokenStream};
-use quote::{quote, ToTokens};
+use quote::{ToTokens, quote};
+#[cfg(doc)]
+use syn::{Attribute, Generics, Index, Path, Type, WhereClause};
 use syn::{
     parse::{Parse, ParseStream},
     parse_quote,
@@ -12,12 +14,10 @@ use syn::{
     spanned::Spanned as _,
     token,
 };
-#[cfg(doc)]
-use syn::{Attribute, Generics, Index, Path, Type, WhereClause};
 
 use crate::{
-    util::{GenericsExt as _, WhereClauseExt as _},
     MacroPath,
+    util::{GenericsExt as _, WhereClauseExt as _},
 };
 
 /// Arguments for `#[delegate]` macro expansion on types (structs or enums).

@@ -6,6 +6,19 @@ All user visible changes to this project will be documented in this file. This p
 
 
 
+## main
+
+[Diff](https://github.com/arcane-rs/delegation/compare/v0.4.0...main) | [Milestone](https://github.com/arcane-rs/delegation/milestone/3)
+
+## BC Breaks
+
+- Set [MSRV] to [1.85.0](https://blog.rust-lang.org/2025/02/20/Rust-1.85.0.html) because of migration to 2024 edition. ([todo])
+
+[todo]: https://github.com/instrumentisto/tracerr-rs/commit/todo
+
+
+
+
 ## [0.4.0] · 2025-01-24
 [0.4.0]: https://github.com/arcane-rs/delegation/tree/v0.4.0
 
@@ -41,4 +54,5 @@ All user visible changes to this project will be documented in this file. This p
 
 
 
+[MSRV]: https://doc.rust-lang.org/cargo/reference/manifest.html#the-rust-version-field
 [Semantic Versioning 2.0.0]: https://semver.org

@@ -1,9 +1,9 @@
 //! Utilities for code generation.
 
 #[cfg(doc)]
-use syn::{parse::Parse, Generics, WhereClause, WherePredicate};
+use syn::{Generics, WhereClause, WherePredicate, parse::Parse};
 use syn::{
-    parse::{discouraged::Speculative as _, ParseStream},
+    parse::{ParseStream, discouraged::Speculative as _},
     punctuated::Punctuated,
     token,
 };

@@ -8,13 +8,13 @@ use std::{
 };
 
 use quote::quote;
+#[cfg(doc)]
+use syn::{Generics, Receiver, ReturnType, Signature, Type};
 use syn::{
     parse_quote, punctuated,
     visit::{self, Visit},
     visit_mut::{self, VisitMut},
 };
-#[cfg(doc)]
-use syn::{Generics, Receiver, ReturnType, Signature, Type};
 
 /// Helper extension of [`syn::Generics`].
 pub(super) trait GenericsExt {
@@ -573,7 +573,7 @@ where
 
 #[cfg(test)]
 mod lift_self_lifetime_spec {
-    use quote::{quote, ToTokens as _};
+    use quote::{ToTokens as _, quote};
     use syn::parse_quote;
 
     use super::SignatureExt as _;

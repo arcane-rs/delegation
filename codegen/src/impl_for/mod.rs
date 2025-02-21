@@ -6,17 +6,16 @@ use std::mem;
 
 use proc_macro2::TokenStream;
 use quote::ToTokens;
+#[cfg(doc)]
+use syn::{Generics, Type};
 use syn::{
     parse::{Parse, ParseStream},
     parse_quote, token,
     visit_mut::VisitMut as _,
 };
-#[cfg(doc)]
-use syn::{Generics, Type};
-
-use crate::MacroPath;
 
 use self::util::{ElideLifetimes as _, GenericBinder, GenericsExt as _};
+use crate::MacroPath;
 
 /// Definition of `impl_for!` macro expansion.
 #[derive(Debug)]

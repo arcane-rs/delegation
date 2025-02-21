@@ -1,8 +1,8 @@
 //! [`MacroPath`] definitions.
 
+use proc_macro_crate::{FoundCrate, crate_name};
 use proc_macro2::{Span, TokenStream};
-use proc_macro_crate::{crate_name, FoundCrate};
-use quote::{quote, ToTokens};
+use quote::{ToTokens, quote};
 
 // TODO: Re-impl once rust-lang/rust#54363 is resolved:
 //       https://github.com/rust-lang/rust/issues/54363

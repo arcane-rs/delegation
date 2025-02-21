@@ -10,7 +10,9 @@ use std::{
 
 use itertools::Itertools as _;
 use proc_macro2::{Span, TokenStream};
-use quote::{format_ident, quote, ToTokens};
+use quote::{ToTokens, format_ident, quote};
+#[cfg(doc)]
+use syn::{Generics, Path, Signature, Type, Visibility, WhereClause};
 use syn::{
     parse::{Parse, ParseStream},
     parse_quote,
@@ -18,15 +20,12 @@ use syn::{
     spanned::Spanned as _,
     token,
 };
-#[cfg(doc)]
-use syn::{Generics, Path, Signature, Type, Visibility, WhereClause};
-
-use crate::{
-    util::{GenericsExt as _, WhereClauseExt as _},
-    MacroPath,
-};
 
 use self::util::{GenericsExt as _, SignatureExt as _};
+use crate::{
+    MacroPath,
+    util::{GenericsExt as _, WhereClauseExt as _},
+};
 
 /// Arguments of `#[delegate]` macro expansion on traits.
 struct Args {
@@ -235,13 +234,13 @@ impl Definition {
                     return Err(syn::Error::new(
                         i.span(),
                         "only trait methods with untyped receiver are allowed",
-                    ))
+                    ));
                 }
                 i => {
                     return Err(syn::Error::new(
                         i.span(),
                         format!("{i:#?} not covered"),
-                    ))
+                    ));
                 }
             }
         }
@@ -955,19 +954,39 @@ impl Definition {
                 let signature = self.bind_signature_types(&m.sig, &mut seq_num);
 
                 // TODO: Use `RefCast` here instead of `mem::transmute`.
-                quote! {
-                    #signature {
-                        <#self_wrapped as #trait_path #ty_gens>:: #method_name(
+                let mut receiver = quote! { ::core::mem::transmute(self) };
+                if m.sig.unsafety.is_none() {
+                    receiver = quote! {
+                        // SAFETY: Wrapper is `#[repr(transparent)]`.
+                        #[allow( // macro expansion
+                            clippy::missing_transmute_annotations,
+                            clippy::transmute_ptr_to_ptr,
+                            unsafe_code,
+                            reason = "macro expansion",
+                        )]
+                        unsafe { #receiver }
+                    };
+                }
+                let body = quote! {
+                    <#self_wrapped as #trait_path #ty_gens>:: #method_name(
+                        #receiver, #( #method_inputs ),*
+                    )
+                };
+                if m.sig.unsafety.is_some() {
+                    quote! {
+                        #signature {
                             // SAFETY: Wrapper is `#[repr(transparent)]`.
                             #[allow( // macro expansion
                                 clippy::missing_transmute_annotations,
                                 clippy::transmute_ptr_to_ptr,
-                                unsafe_code,
                                 reason = "macro expansion",
                             )]
-                            unsafe { ::core::mem::transmute(self) },
-                            #( #method_inputs ),*
-                        )
+                            unsafe { #body }
+                        }
+                    }
+                } else {
+                    quote! {
+                        #signature { #body }
                     }
                 }
             });
