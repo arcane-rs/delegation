@@ -127,7 +127,7 @@ impl Definition {
             for i in &mut self.template.items {
                 if let syn::ImplItem::Fn(m) = i {
                     binder.visit_impl_item_fn_mut(m);
-                };
+                }
             }
         }
 
@@ -238,11 +238,11 @@ impl Definition {
                     if let syn::ReturnType::Type(_, ret_ty) = &mut m.sig.output
                     {
                         replace_sig_type(&mut *ret_ty);
-                    };
+                    }
                 }
 
                 replace_selfcall(&mut m.block);
-            };
+            }
         }
     }
 

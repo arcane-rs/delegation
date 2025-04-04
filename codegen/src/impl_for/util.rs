@@ -61,7 +61,7 @@ impl VisitMut for GenericBinder<'_> {
             *i = l.clone();
         } else {
             visit_mut::visit_lifetime_mut(self, i);
-        };
+        }
     }
 
     fn visit_block_mut(&mut self, i: &mut syn::Block) {
@@ -86,7 +86,7 @@ impl VisitMut for GenericBinder<'_> {
             *i = t.clone();
         } else {
             visit_mut::visit_type_mut(self, i);
-        };
+        }
     }
 }
 

@@ -60,7 +60,7 @@ impl Parse for Args {
                     input.span(),
                     "unexpected attribute argument",
                 ));
-            };
+            }
 
             if input.peek(token::Comma) {
                 _ = input.parse::<token::Comma>()?;
@@ -1119,7 +1119,7 @@ impl Definition {
     fn ref_trait_signatures(
         &self,
         mutable: bool,
-    ) -> impl Iterator<Item = syn::Signature> + '_ {
+    ) -> impl Iterator<Item = syn::Signature> {
         if mutable {
             self.methods_ref_mut.iter()
         } else {
@@ -1147,7 +1147,7 @@ impl Definition {
     /// [`Generics`].
     fn methods_types(
         &self,
-    ) -> impl Iterator<Item = (syn::Generics, syn::Type)> + '_ {
+    ) -> impl Iterator<Item = (syn::Generics, syn::Type)> {
         self.methods_owned
             .iter()
             .chain(&self.methods_ref)

@@ -246,6 +246,7 @@ impl SignatureExt for syn::Signature {
                 }
 
                 rec.mutability = None;
+                #[expect(clippy::return_and_then, reason = "false positive")]
                 rec.reference.take().and_then(|(_, l)| l)
             }
             Some(syn::FnArg::Typed(_)) | None => return,
@@ -444,7 +445,7 @@ impl SignatureExt for syn::Signature {
             if lt.ident != "_" {
                 _ = collector.lifetimes.remove(lt);
             }
-        };
+        }
 
         // 3. Remove lifetimes defined in trait's generics.
         let method_lifetimes =
