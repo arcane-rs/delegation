@@ -163,7 +163,9 @@ impl Definition {
         Ok(Self {
             ident: item.ident.clone(),
             generics: item.generics.clone(),
-            delegated: DelegatedTypes::Field((&mut item.fields).try_into()?),
+            delegated: DelegatedTypes::Field(Box::new(
+                (&mut item.fields).try_into()?,
+            )),
             derived_traits: args.derive.into_iter().collect(),
             item: Item::Struct(item),
             macro_path: MacroPath::default(),
@@ -436,7 +438,7 @@ enum DelegatedTypes {
     Variants(Vec<Variant>),
 
     /// [`Field`] of the struct.
-    Field(Field),
+    Field(Box<Field>),
 }
 
 impl DelegatedTypes {

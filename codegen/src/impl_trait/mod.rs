@@ -187,7 +187,7 @@ impl Definition {
         let macro_path = MacroPath::default();
 
         let def_item = args.r#as.as_ref().map_or_else(
-            || Item::Definition(item.clone()),
+            || Item::Definition(Box::new(item.clone())),
             |path| Item::External(path.clone()),
         );
         let item_hash = {
@@ -1267,7 +1267,7 @@ impl Parse for ForTy {
 #[derive(Clone, Debug)]
 enum Item {
     /// Definition of the crate-local trait.
-    Definition(syn::ItemTrait),
+    Definition(Box<syn::ItemTrait>),
 
     /// Definition of the external trait.
     External(syn::Path),

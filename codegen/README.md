@@ -3,7 +3,7 @@
 
 [![crates.io](https://img.shields.io/crates/v/delegation-codegen.svg?maxAge=2592000 "crates.io")](https://crates.io/crates/delegation-codegen)
 [![Rust 1.85+](https://img.shields.io/badge/rustc-1.85+-lightgray.svg "Rust 1.85+")](https://blog.rust-lang.org/2025/02/20/Rust-1.85.0.html)
-[![Unsafe Forbidden](https://img.shields.io/badge/unsafe-forbidden-success.svg "Unsafe forbidden")](https://github.com/rust-secure-code/safety-dance)  
+[![Unsafe Forbidden](https://img.shields.io/badge/unsafe-forbidden-success.svg "Unsafe forbidden")](https://github.com/rust-secure-code/safety-dance)\
 [![CI](https://github.com/arcane-rs/delegation/actions/workflows/ci.yml/badge.svg?branch=main "CI")](https://github.com/arcane-rs/delegation/actions?query=workflow%3ACI+branch%3Amain)
 [![Rust docs](https://docs.rs/delegation-codegen/badge.svg "Rust docs")](https://docs.rs/delegation-codegen)
 

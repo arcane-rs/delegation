@@ -83,7 +83,7 @@ impl VisitMut for GenericBinder<'_> {
         if let Some(GenArg::Type(t)) =
             GenPar::try_from(&*i).ok().and_then(|ty| self.generics.get(&ty))
         {
-            *i = t.clone();
+            *i = (**t).clone();
         } else {
             visit_mut::visit_type_mut(self, i);
         }
@@ -153,7 +153,7 @@ pub(super) enum GenArg {
     Lifetime(syn::Lifetime),
 
     /// Type argument.
-    Type(syn::Type),
+    Type(Box<syn::Type>),
 
     /// Const argument.
     Const(syn::Block),
@@ -167,7 +167,7 @@ impl<'a> TryFrom<&'a syn::GenericArgument> for GenArg {
 
         Ok(match arg {
             A::Lifetime(lt) => Self::Lifetime(lt.clone()),
-            A::Type(ty) => Self::Type(ty.clone()),
+            A::Type(ty) => Self::Type(Box::new(ty.clone())),
             A::Const(syn::Expr::Block(syn::ExprBlock { block, .. })) => {
                 Self::Const(block.clone())
             }
