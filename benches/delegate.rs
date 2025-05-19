@@ -1,3 +1,5 @@
+use std::hint;
+
 use criterion::{Criterion, criterion_group, criterion_main};
 use delegation::delegate;
 
@@ -26,8 +28,8 @@ macro_rules! def_bench {
         fn bench(bencher: &mut ::criterion::Bencher) {
             $(
                 bencher.iter(|| {
-                    let name = ::criterion::black_box(
-                        Name::$variant(String::from("Test"))
+                    let name = hint::black_box(
+                        Name::$variant(String::from("Test")),
                     );
 
                     assert_eq!(name.as_str(), "Test");
