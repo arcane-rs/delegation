@@ -246,7 +246,6 @@ impl SignatureExt for syn::Signature {
                 }
 
                 rec.mutability = None;
-                #[expect(clippy::return_and_then, reason = "false positive")]
                 rec.reference.take().and_then(|(_, l)| l)
             }
             Some(syn::FnArg::Typed(_)) | None => return,
