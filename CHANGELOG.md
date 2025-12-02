@@ -12,8 +12,9 @@ All user visible changes to this project will be documented in this file. This p
 
 ## BC Breaks
 
-- Set [MSRV] to [1.85.0](https://blog.rust-lang.org/2025/02/20/Rust-1.85.0.html) because of migration to 2024 edition. ([c847c2a3])
+- Set [MSRV] to [1.86.0](https://blog.rust-lang.org/2025/04/03/Rust-1.86.0) because of migration to 2024 edition. ([c847c2a3], [#19])
 
+[#19]: https://github.com/arcane-rs/delegation/pull/19
 [c847c2a3]: https://github.com/instrumentisto/tracerr-rs/commit/c847c2a3e5a1d1293db410147220f6e958aea454
 
 
