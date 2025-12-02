@@ -21,7 +21,7 @@ include = ["/benches/", "/src/", "CHANGELOG.md", "/LICENSE-APACHE", "/LICENSE-MI
 codegen = { version = "=0.4.0", package = "delegation-codegen", path = "codegen" }
 
 [dev-dependencies]
-criterion = { version = "0.7", default-features = false }
+criterion = { version = "0.8", default-features = false }
 
 # TODO: Remove once `criterion` is upgraded.
 # Not really used, for surviving `minimal-versions` check only.
