@@ -2,7 +2,7 @@
 name = "delegation"
 version = "0.4.0"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.86"
 description = "Macro-based delegation for enums and structs."
 license = "MIT OR Apache-2.0"
 authors = [
@@ -21,7 +21,7 @@ include = ["/benches/", "/src/", "CHANGELOG.md", "/LICENSE-APACHE", "/LICENSE-MI
 codegen = { version = "=0.4.0", package = "delegation-codegen", path = "codegen" }
 
 [dev-dependencies]
-criterion = { version = "0.7", default-features = false }
+criterion = { version = "0.8", default-features = false }
 
 # TODO: Remove once `criterion` is upgraded.
 # Not really used, for surviving `minimal-versions` check only.
