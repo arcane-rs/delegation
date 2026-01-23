@@ -1,5 +1,11 @@
-#![cfg_attr(any(doc, test), doc = include_str!("../README.md"))]
-#![cfg_attr(not(any(doc, test)), doc = env!("CARGO_PKG_NAME"))]
+#![cfg_attr(
+    any(doc, all(test, not(clippy))),
+    doc = include_str!("../README.md"),
+)]
+#![cfg_attr(
+    not(any(doc, all(test, not(clippy)))),
+    doc = env!("CARGO_PKG_NAME"),
+)]
 #![deny(nonstandard_style, rustdoc::all, trivial_casts, trivial_numeric_casts)]
 #![forbid(non_ascii_idents, unsafe_code)]
 #![warn(
@@ -23,6 +29,7 @@
     clippy::default_union_representation,
     clippy::derive_partial_eq_without_eq,
     clippy::doc_include_without_cfg,
+    clippy::doc_paragraphs_missing_punctuation,
     clippy::empty_drop,
     clippy::empty_structs_with_brackets,
     clippy::equatable_if_let,
