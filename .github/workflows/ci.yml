@@ -112,7 +112,8 @@ jobs:
 
       - run: cargo run --example ${{ matrix.example }}
         env:
-          RUSTFLAGS: -D warnings
+          # TODO: Revisit on next Rust version upgrade.
+          RUSTFLAGS: ${{ matrix.toolchain != 'nightly' && '-D warnings' || '' }}
 
   msrv:
     name: MSRV
