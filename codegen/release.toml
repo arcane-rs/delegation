@@ -24,6 +24,11 @@ replace = "...v{{version}})"
 
 [[pre-release-replacements]]
 file = "README.md"
+exactly = 1
+search = "/delegation/[^/\\)\\s]+\\)"
+replace = "/delegation/{{version}})"
+[[pre-release-replacements]]
+file = "README.md"
 exactly = 3
 search = "/blob/[^/]+/"
 replace = "/blob/v{{version}}/"

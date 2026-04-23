@@ -7,7 +7,7 @@
 [![CI](https://github.com/arcane-rs/delegation/actions/workflows/ci.yml/badge.svg?branch=main "CI")](https://github.com/arcane-rs/delegation/actions?query=workflow%3ACI+branch%3Amain)
 [![Rust docs](https://docs.rs/delegation/badge.svg "Rust docs")](https://docs.rs/delegation)
 
-[API Docs](https://docs.rs/delegation) |
+[API Docs](https://docs.rs/delegation/0.4.0) |
 [Changelog](https://github.com/arcane-rs/delegation/blob/v0.4.0/CHANGELOG.md)
 
 Macro-based delegation for enums and structs.
