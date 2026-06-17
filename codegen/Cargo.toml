@@ -21,7 +21,7 @@ include = ["/src/", "/CHANGELOG.md", "/LICENSE-APACHE", "/LICENSE-MIT", "/README
 proc-macro = true
 
 [dependencies]
-itertools = "0.14"
+itertools = "0.15"
 proc-macro-crate = "3.2"
 proc-macro2 = { version = "1.0.28", features = ["span-locations"] }
 quote = "1.0.9"
