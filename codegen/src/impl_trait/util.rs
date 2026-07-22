@@ -233,14 +233,16 @@ impl SignatureExt for syn::Signature {
         //    reference.
         let self_lifetime = match self.inputs.first_mut() {
             Some(syn::FnArg::Receiver(rec)) => {
-                let syn::ReceiverKind::Reference(_, lt, mutability) =
-                    &mut rec.kind
+                let syn::ReceiverKind::Reference(_, lt, _) = &mut rec.kind
                 else {
                     return;
                 };
+                let lt = lt.take();
 
-                *mutability = None;
-                lt.take()
+                rec.mutability = None;
+                rec.kind = syn::ReceiverKind::Value;
+
+                lt
             }
             Some(syn::FnArg::Typed(_)) | None => return,
         };
