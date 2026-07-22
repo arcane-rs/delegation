@@ -74,10 +74,6 @@ impl GenericsExt for syn::Generics {
 
         impl CollectTypesWithLifetimesVisitor {
             /// Creates a new [`CollectTypesWithLifetimesVisitor`].
-            #[expect( // not supported inside `impl Trait` yet
-                single_use_lifetimes,
-                reason = "not supported inside `impl Trait` yet"
-            )]
             fn new<'a>(
                 lifetimes: impl IntoIterator<Item = &'a syn::Lifetime>,
             ) -> Self {
