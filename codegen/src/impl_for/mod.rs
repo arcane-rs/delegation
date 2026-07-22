@@ -108,7 +108,7 @@ impl Definition {
     /// Replaces template's trait with the specified one.
     fn specify_trait(&mut self) -> syn::Result<()> {
         self.template.trait_ =
-            Some((None, self.trait_path.clone(), token::For::default()));
+            Some((self.trait_path.clone(), token::For::default()));
 
         if let syn::PathArguments::AngleBracketed(trait_generic_args) = &self
             .trait_path
@@ -173,6 +173,7 @@ impl Definition {
             //   |    |                       |
             // qself  path seg 1              path seg 2 (position)
             let syn::Type::Path(syn::TypePath {
+                attrs: _,
                 qself: Some(syn::QSelf { position, .. }),
                 path,
             }) = qself_ty.as_mut()

@@ -202,31 +202,32 @@ impl Definition {
 
         for i in &item.items {
             match i {
-                syn::TraitItem::Fn(m) => match m.sig.receiver() {
-                    Some(syn::Receiver {
-                        reference: Some(_),
-                        mutability: Some(_),
-                        colon_token: None,
-                        ..
-                    }) => methods_ref_mut.push(m.clone()),
-                    Some(syn::Receiver {
-                        reference: Some(_),
-                        mutability: None,
-                        colon_token: None,
-                        ..
-                    }) => methods_ref.push(m.clone()),
-                    Some(syn::Receiver {
-                        reference: None,
-                        colon_token: None,
-                        ..
-                    }) => methods_owned.push(m.clone()),
-                    Some(syn::Receiver { colon_token: Some(_), .. }) | None => {
-                        return Err(syn::Error::new(
-                            m.span(),
-                            "all trait method must have an untyped receiver",
-                        ));
+                syn::TraitItem::Fn(m) => {
+                    match m.sig.receiver().map(|r| &r.kind) {
+                        Some(syn::ReceiverKind::Reference(_, _, Some(_))) => {
+                            methods_ref_mut.push(m.clone());
+                        }
+                        Some(syn::ReceiverKind::Reference(_, _, None)) => {
+                            methods_ref.push(m.clone());
+                        }
+                        Some(syn::ReceiverKind::Value) => {
+                            methods_owned.push(m.clone());
+                        }
+                        Some(syn::ReceiverKind::Typed(..)) | None => {
+                            return Err(syn::Error::new(
+                                m.span(),
+                                "all trait method must have an untyped \
+                                 receiver",
+                            ));
+                        }
+                        _ => {
+                            return Err(syn::Error::new(
+                                m.span(),
+                                "unsupported method receiver",
+                            ));
+                        }
                     }
-                },
+                }
                 syn::TraitItem::Type(_)
                 | syn::TraitItem::Const(_)
                 | syn::TraitItem::Macro(_)
@@ -952,10 +953,11 @@ impl Definition {
                 let (_, method_name, method_inputs) = m.sig.split_for_impl();
 
                 let signature = self.bind_signature_types(&m.sig, &mut seq_num);
+                let is_unsafe = matches!(m.sig.safety, syn::Safety::Unsafe(_));
 
                 // TODO: Use `RefCast` here instead of `mem::transmute`.
                 let mut receiver = quote! { ::core::mem::transmute(self) };
-                if m.sig.unsafety.is_none() {
+                if !is_unsafe {
                     receiver = quote! {
                         // SAFETY: Wrapper is `#[repr(transparent)]`.
                         #[allow( // macro expansion
@@ -972,7 +974,7 @@ impl Definition {
                         #receiver, #( #method_inputs ),*
                     )
                 };
-                if m.sig.unsafety.is_some() {
+                if is_unsafe {
                     quote! {
                         #signature {
                             // SAFETY: Wrapper is `#[repr(transparent)]`.
