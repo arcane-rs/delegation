@@ -233,16 +233,16 @@ impl SignatureExt for syn::Signature {
         //    reference.
         let self_lifetime = match self.inputs.first_mut() {
             Some(syn::FnArg::Receiver(rec)) => {
-                if rec.reference.is_none() {
+                let syn::ReceiverKind::Reference(_, lt, _) = &mut rec.kind
+                else {
                     return;
-                }
-
-                if let syn::Type::Reference(r) = rec.ty.as_ref() {
-                    rec.ty = r.elem.clone();
-                }
+                };
+                let lt = lt.take();
 
                 rec.mutability = None;
-                rec.reference.take().and_then(|(_, l)| l)
+                rec.kind = syn::ReceiverKind::Value;
+
+                lt
             }
             Some(syn::FnArg::Typed(_)) | None => return,
         };
@@ -310,7 +310,7 @@ impl SignatureExt for syn::Signature {
         // 1. Get or expand receiver lifetime.
         let receiver_lt = match self.inputs.first_mut() {
             Some(syn::FnArg::Receiver(rec)) => {
-                if let Some((_, lt)) = &mut rec.reference {
+                if let syn::ReceiverKind::Reference(_, lt, _) = &mut rec.kind {
                     Some(&*lt.get_or_insert_with(|| {
                         self.generics.params.push(parse_quote! { #return_lt });
                         return_lt.clone()
@@ -433,7 +433,7 @@ impl SignatureExt for syn::Signature {
 
         // 2. Remove receiver's lifetime from the collected set.
         if let Some(syn::FnArg::Receiver(syn::Receiver {
-            reference: Some((_, Some(lt))),
+            kind: syn::ReceiverKind::Reference(_, Some(lt), _),
             ..
         })) = self.inputs.first()
         {
