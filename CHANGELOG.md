@@ -6,15 +6,21 @@ All user visible changes to this project will be documented in this file. This p
 
 
 
-## main
+## [0.5.0] · 2026-07-22
+[0.5.0]: https://github.com/arcane-rs/delegation/tree/v0.5.0
 
-[Diff](https://github.com/arcane-rs/delegation/compare/v0.4.0...main) | [Milestone](https://github.com/arcane-rs/delegation/milestone/3)
+[Diff](https://github.com/arcane-rs/delegation/compare/v0.4.0...v0.5.0) | [Milestone](https://github.com/arcane-rs/delegation/milestone/3)
 
 ## BC Breaks
 
 - Set [MSRV] to [1.86.0](https://blog.rust-lang.org/2025/04/03/Rust-1.86.0) because of migration to 2024 edition. ([c847c2a3], [#19])
 
+## Changed
+
+- Upgraded to 3.0 version of [`syn`] crate. ([#24])
+
 [#19]: https://github.com/arcane-rs/delegation/pull/19
+[#24]: https://github.com/arcane-rs/delegation/pull/24
 [c847c2a3]: https://github.com/instrumentisto/tracerr-rs/commit/c847c2a3e5a1d1293db410147220f6e958aea454
 
 
@@ -55,5 +61,6 @@ All user visible changes to this project will be documented in this file. This p
 
 
 
+[`syn`]: https://docs.rs/syn
 [MSRV]: https://doc.rust-lang.org/cargo/reference/manifest.html#the-rust-version-field
 [Semantic Versioning 2.0.0]: https://semver.org

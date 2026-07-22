@@ -1,6 +1,6 @@
 [package]
 name = "delegation"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2024"
 rust-version = "1.86"
 description = "Macro-based delegation for enums and structs."
@@ -18,7 +18,7 @@ keywords = ["delegate", "delegation", "dispatch", "enum", "optimization"]
 include = ["/benches/", "/src/", "CHANGELOG.md", "/LICENSE-APACHE", "/LICENSE-MIT", "/README.md"]
 
 [dependencies]
-codegen = { version = "=0.4.0", package = "delegation-codegen", path = "codegen" }
+codegen = { version = "=0.5.0", package = "delegation-codegen", path = "codegen" }
 
 [dev-dependencies]
 criterion = { version = "0.8", default-features = false }

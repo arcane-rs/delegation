@@ -7,8 +7,8 @@
 [![CI](https://github.com/arcane-rs/delegation/actions/workflows/ci.yml/badge.svg?branch=main "CI")](https://github.com/arcane-rs/delegation/actions?query=workflow%3ACI+branch%3Amain)
 [![Rust docs](https://docs.rs/delegation/badge.svg "Rust docs")](https://docs.rs/delegation)
 
-[API Docs](https://docs.rs/delegation/0.4.0) |
-[Changelog](https://github.com/arcane-rs/delegation/blob/v0.4.0/CHANGELOG.md)
+[API Docs](https://docs.rs/delegation/0.5.0) |
+[Changelog](https://github.com/arcane-rs/delegation/blob/v0.5.0/CHANGELOG.md)
 
 Macro-based delegation for enums and structs.
 
@@ -380,6 +380,6 @@ Unless you explicitly state otherwise, any contribution intentionally submitted 
 [`enum_derive::EnumInnerAsTrait`]: https://docs.rs/enum_derive/latest/enum_derive/macro.EnumInnerAsTrait.html
 [`enum_dispatch`]: https://docs.rs/enum_dispatch
 [1]: https://doc.rust-lang.org/book/ch17-02-trait-objects.html
-[APACHE]: https://github.com/arcane-rs/delegation/blob/v0.4.0/LICENSE-APACHE
-[MIT]: https://github.com/arcane-rs/delegation/blob/v0.4.0/LICENSE-MIT
+[APACHE]: https://github.com/arcane-rs/delegation/blob/v0.5.0/LICENSE-APACHE
+[MIT]: https://github.com/arcane-rs/delegation/blob/v0.5.0/LICENSE-MIT
 [orphan rules]: https://rust-lang.github.io/chalk/book/clauses/coherence.html#the-orphan-rules
